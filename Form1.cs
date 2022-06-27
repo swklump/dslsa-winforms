@@ -26,16 +26,12 @@ namespace dslsa
         private String masterpass = "";
         public List<string> report_nums = new List<string>();
         private String dbpath = @"C:\Users\klump\OneDrive\Programming\dslsa\dslsa_database.db";
+        //private String dbpath = @"\\ANC-FS\ANC-Projects\Geotech\App Folder";
         private SQLiteConnection con;
 
 
 
         public double ConvertVal { get; private set; }
-
-        //Stopwatch stopwatch = new Stopwatch();
-        //stopwatch.Start();
-        //stopwatch.Stop();
-        //Console.WriteLine("Elapsed Time is {0} ms", stopwatch.ElapsedMilliseconds);
 
         //LOAD OPTIONS METHODS.....................................................................
         private void FormMain_Load(object sender, EventArgs e)
@@ -59,6 +55,7 @@ namespace dslsa
                     }
                 }
             }
+            state_tables.Remove("Folderpaths");
             state_tables.Sort();
             foreach (String tab in state_tables)
             {
@@ -186,13 +183,33 @@ namespace dslsa
 
         private void listView_City_Click(object sender, EventArgs e)
         {
+            //get kmz folder from db
+            //setup database connection
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql = string.Empty;
+            string fname = string.Empty;
+            string filename;
+
+
+            //get excel report path
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        fname = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+
             //unzip kmz
-            string filename = @"C:\Users\klump\OneDrive\Programming\dslsa\Bethel.kmz";
-            var file = File.OpenRead(filename);
+
+            var file = File.OpenRead(fname + @"\Bethel.kmz");
             var zip = new ZipArchive(file, ZipArchiveMode.Read);
             XNamespace ns = "http://www.opengis.net/kml/2.2";
-            XDocument xDoc = null;
-
             IDictionary<string, List<string>> pointDict = new Dictionary<string, List<string>>();
 
             pointDict.Add("lat", new List<string>());
@@ -201,7 +218,7 @@ namespace dslsa
             pointDict.Add("file", new List<string>());
 
             var stream = zip.GetEntry("doc.kml").Open();
-            xDoc = XDocument.Load(stream);
+            XDocument xDoc = XDocument.Load(stream);
             if (xDoc != null)
             {
                 var placemarks = xDoc.Root.Element(ns + "Document").Element(ns + "Folder").Elements(ns + "Placemark");
@@ -236,7 +253,6 @@ namespace dslsa
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
             {
-
                 GMapMarker marker =
                     new GMarkerGoogle(
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
@@ -281,6 +297,49 @@ namespace dslsa
                 tabControl_Login.Visible = true;
                 label_LoginMessage.Text = "Login successful!";
                 label_LoginMessage.ForeColor = Color.Green;
+
+                //setup database connection
+                SQLiteCommand cmd_sql;
+                SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+                con.Open();
+                string fname = String.Empty;
+                //get excel report path to display
+                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='excelpath'", con))
+                {
+                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            fname = Convert.ToString(rdr["value"]);
+                        }
+                    }
+                }
+                label_CurrentExcelPath.Text = fname;
+                //get kmz folder path to display
+                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
+                {
+                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            fname = Convert.ToString(rdr["value"]);
+                        }
+                    }
+                }
+                label_CurrentKMZPath.Text = fname;
+                //get pdf folder path to display
+                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
+                {
+                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            fname = Convert.ToString(rdr["value"]);
+                        }
+                    }
+                }
+                label_CurrentPDFPath.Text = fname;
+
             }
             else
             {
@@ -288,6 +347,103 @@ namespace dslsa
                 label_LoginMessage.ForeColor = Color.Red;
                 tabControl_Login.Visible = false;
             }
+
+        }
+
+        private void button_UpdateExcelPath_Click(object sender, EventArgs e)
+        {
+            string newpath = textBox_NewExcelPath.Text;
+            if (newpath.Length <= 5)
+            {
+                label_ExcelPathMessage.Text = "Add a folder and file name ending in '.xlsx'";
+                label_ExcelPathMessage.ForeColor = Color.Red;
+                return;
+            }
+            else if (newpath.Substring(newpath.Length - 5) != ".xlsx")
+            {
+                label_ExcelPathMessage.Text = "Add the file name ending in '.xlsx'";
+                label_ExcelPathMessage.ForeColor = Color.Red;
+                return;
+            }
+            else
+            {
+                //setup database connection
+                SQLiteCommand cmd_sql;
+                SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+                con.Open();
+
+                string sql = string.Empty;
+                sql = "DELETE FROM FOLDERPATHS WHERE type='excelpath'";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('excelpath','" + newpath + "')";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                label_ExcelPathMessage.Text = "Excel folder path and file name updated!";
+                label_ExcelPathMessage.ForeColor = Color.Green;
+
+                label_CurrentExcelPath.Text = newpath;
+            }
+
+            con.Close();
+
+        }
+
+        private void button_UpdateKMZPath_Click(object sender, EventArgs e)
+        {
+            //setup database connection
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+
+            string newpath = textBox_NewKMZPath.Text;
+
+            string sql = string.Empty;
+            sql = "DELETE FROM FOLDERPATHS WHERE type='kmzpath'";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('kmzpath','" + newpath + "')";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            label_KMZPathMessage.Text = "KMZ folder path updated!";
+            label_KMZPathMessage.ForeColor = Color.Green;
+
+            label_CurrentKMZPath.Text = newpath;
+
+
+            con.Close();
+        }
+
+        private void button_UpdatePDFPath_Click(object sender, EventArgs e)
+        {
+
+            //setup database connection
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+
+            string newpath = textBox_NewPDFPath.Text;
+
+            string sql = string.Empty;
+            sql = "DELETE FROM FOLDERPATHS WHERE type='pdfpath'";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('pdfpath','" + newpath + "')";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            label_PDFPathMessage.Text = "PDF folder path updated!";
+            label_PDFPathMessage.ForeColor = Color.Green;
+
+            label_CurrentPDFPath.Text = newpath;
+
+
+            con.Close();
 
         }
 
@@ -299,99 +455,134 @@ namespace dslsa
 
             //setup database connection
             SQLiteCommand cmd_sql;
-            SQLiteDataReader dr;
             SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
             con.Open();
+            string sql = string.Empty;
+            string fname = string.Empty;
 
-
-            String fname = @"C:\Users\klump\OneDrive\Programming\dslsa\Soils Report Record.xlsx";
-            DataTable dtResult = null;
-            int totalSheet = 0;
-            using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
+            //get excel report path
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='excelpath'", con))
             {
-                objConn.Open();
-                OleDbCommand cmd = new OleDbCommand();
-                OleDbDataAdapter oleda = new OleDbDataAdapter();
-                DataSet ds;
-                DataTable dt = objConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-
-                string sheetName = string.Empty;
-                string sql = string.Empty;
-
-                if (dt != null)
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
                 {
-                    foreach (DataRow drs in dt.Rows)
+
+                    while (rdr.Read())
                     {
-                        //get data from spreadsheet
-                        sheetName = drs["TABLE_NAME"].ToString();
-                        if (!sheetName.Contains("FilterDatabase"))
-                        {
-                            var tempDataTable = (from dataRow in dt.AsEnumerable()
-                                                 where !dataRow["TABLE_NAME"].ToString().Contains("FilterDatabase")
-                                                 select dataRow).CopyToDataTable();
-                            dt = tempDataTable;
-                            totalSheet = dt.Rows.Count;
-
-                            cmd.Connection = objConn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandText = "SELECT * FROM [" + sheetName + "]";
-                            oleda = new OleDbDataAdapter(cmd);
-
-                            ds = new DataSet();
-                            oleda.Fill(ds, "excelData");
-                            dtResult = ds.Tables["excelData"];
-                            objConn.Close();
-
-                            //create database table
-                            sql = @"CREATE TABLE IF NOT EXISTS " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(" +
-                                "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255)" +
-                                ")";
-                            cmd_sql = new SQLiteCommand(sql, con);
-                            cmd_sql.ExecuteNonQuery();
-
-                            //clear database table
-                            sql = @"DELETE FROM " + sheetName.Substring(0, sheetName.Length - 1).ToUpper();
-                            cmd_sql = new SQLiteCommand(sql, con);
-                            cmd_sql.ExecuteNonQuery();
-
-                            //send datatable to database
-                            cmd_sql = new SQLiteCommand();
-                            using (cmd_sql = new SQLiteCommand(con))
-                            {
-                                using (var transaction = con.BeginTransaction())
-                                {
-                                    foreach (DataRow dataRow in dtResult.Rows)
-                                    {
-                                        cmd_sql.CommandText = "INSERT INTO " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(report,projectnumber,client,projectname,area,city) VALUES (" +
-                                            "'" + dataRow[0].ToString().Replace("'", "''") + "'," +
-                                            "'" + dataRow[1].ToString().Replace("'", "''") + "'," +
-                                            "'" + dataRow[2].ToString().Replace("'", "''") + "'," +
-                                            "'" + dataRow[3].ToString().Replace("'", "''") + "'," +
-                                            "'" + dataRow[4].ToString().Replace("'", "''") + "'," +
-                                            "'" + dataRow[5].ToString().Replace("'", "''") + "'" +
-                                            ")";
-                                        cmd_sql.ExecuteNonQuery();
-                                    }
-                                    transaction.Commit();
-                                }
-
-                            }
-                        }
-
+                        fname = Convert.ToString(rdr["value"]);
                     }
                 }
             }
 
+
+            //send excel data to database
+            DataTable dtResult = null;
+            int totalSheet = 0;
+
+            try
+            {
+                using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
+                {
+                    objConn.Open();
+                    OleDbCommand cmd = new OleDbCommand();
+                    OleDbDataAdapter oleda = new OleDbDataAdapter();
+                    DataSet ds;
+                    DataTable dt = objConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+
+                    string sheetName = string.Empty;
+
+
+                    if (dt != null)
+                    {
+                        foreach (DataRow drs in dt.Rows)
+                        {
+                            //get data from spreadsheet
+                            sheetName = drs["TABLE_NAME"].ToString();
+                            if (!sheetName.Contains("FilterDatabase"))
+                            {
+                                var tempDataTable = (from dataRow in dt.AsEnumerable()
+                                                     where !dataRow["TABLE_NAME"].ToString().Contains("FilterDatabase")
+                                                     select dataRow).CopyToDataTable();
+                                dt = tempDataTable;
+                                totalSheet = dt.Rows.Count;
+
+                                cmd.Connection = objConn;
+                                cmd.CommandType = CommandType.Text;
+                                cmd.CommandText = "SELECT * FROM [" + sheetName + "]";
+                                oleda = new OleDbDataAdapter(cmd);
+
+                                ds = new DataSet();
+                                oleda.Fill(ds, "excelData");
+                                dtResult = ds.Tables["excelData"];
+                                objConn.Close();
+
+                                //create database table
+                                sql = @"CREATE TABLE IF NOT EXISTS " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(" +
+                                    "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255)" +
+                                    ")";
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
+                                //clear database table
+                                sql = @"DELETE FROM " + sheetName.Substring(0, sheetName.Length - 1).ToUpper();
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
+                                //send datatable to database
+                                cmd_sql = new SQLiteCommand();
+                                using (cmd_sql = new SQLiteCommand(con))
+                                {
+                                    using (var transaction = con.BeginTransaction())
+                                    {
+                                        foreach (DataRow dataRow in dtResult.Rows)
+                                        {
+                                            cmd_sql.CommandText = "INSERT INTO " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(report,projectnumber,client,projectname,area,city) VALUES (" +
+                                                "'" + dataRow[0].ToString().Replace("'", "''") + "'," +
+                                                "'" + dataRow[1].ToString().Replace("'", "''") + "'," +
+                                                "'" + dataRow[2].ToString().Replace("'", "''") + "'," +
+                                                "'" + dataRow[3].ToString().Replace("'", "''") + "'," +
+                                                "'" + dataRow[4].ToString().Replace("'", "''") + "'," +
+                                                "'" + dataRow[5].ToString().Replace("'", "''") + "'" +
+                                                ")";
+                                            cmd_sql.ExecuteNonQuery();
+                                        }
+                                        transaction.Commit();
+                                    }
+
+                                }
+                            }
+
+                        }
+                    }
+
+                    label_UpdateDB.Text = "Upload complete!";
+                    label_UpdateDB.ForeColor = Color.Green;
+                }
+
+            }
+            catch (Exception)
+            {
+                label_UpdateDB.Text = "There was an error updating the database. Please verify the soils report record excel file exists in the folder entered in the Folder Paths tab.";
+                label_UpdateDB.ForeColor = Color.Red;
+            }
+
             con.Close();
 
-            label_UpdateDB.Text = "Upload complete!";
-            label_UpdateDB.ForeColor = Color.Green;
+
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             label_UpdateDB.Text = "";
-            label_UpdateDB.ForeColor = System.Drawing.Color.Black;
+            label_UpdateDB.ForeColor = Color.Black;
+
+            label_ExcelPathMessage.Text = "";
+            label_ExcelPathMessage.ForeColor = Color.Black;
+
+            label_KMZPathMessage.Text = "";
+            label_KMZPathMessage.ForeColor = Color.Black;
+
+            textBox_NewExcelPath.Text = "";
+            textBox_NewKMZPath.Text = "";
 
 
             //change accept button based on tab selected
@@ -491,6 +682,7 @@ namespace dslsa
             Form2 s = new Form2();
             s.Show();
         }
+
 
     }
 }

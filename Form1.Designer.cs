@@ -62,6 +62,24 @@
             this.button_UpdateDB = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button_UpdatePDFPath = new System.Windows.Forms.Button();
+            this.button_UpdateKMZPath = new System.Windows.Forms.Button();
+            this.button_UpdateExcelPath = new System.Windows.Forms.Button();
+            this.textBox_NewPDFPath = new System.Windows.Forms.TextBox();
+            this.textBox_NewKMZPath = new System.Windows.Forms.TextBox();
+            this.textBox_NewExcelPath = new System.Windows.Forms.TextBox();
+            this.label_CurrentPDFPath = new System.Windows.Forms.Label();
+            this.label_CurrentKMZPath = new System.Windows.Forms.Label();
+            this.label_CurrentExcelPath = new System.Windows.Forms.Label();
+            this.label_PDFPathMessage = new System.Windows.Forms.Label();
+            this.label_KMZPathMessage = new System.Windows.Forms.Label();
+            this.label_ExcelPathMessage = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             this.button_Login = new System.Windows.Forms.Button();
             this.textBox_Password = new System.Windows.Forms.TextBox();
             this.textBox_Username = new System.Windows.Forms.TextBox();
@@ -75,6 +93,7 @@
             this.tabPage2.SuspendLayout();
             this.tabControl_Login.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -395,7 +414,7 @@
             // 
             this.label_UpdateDB.Location = new System.Drawing.Point(19, 76);
             this.label_UpdateDB.Name = "label_UpdateDB";
-            this.label_UpdateDB.Size = new System.Drawing.Size(143, 45);
+            this.label_UpdateDB.Size = new System.Drawing.Size(415, 45);
             this.label_UpdateDB.TabIndex = 2;
             // 
             // button_UpdateDB
@@ -419,13 +438,180 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.button_UpdatePDFPath);
+            this.tabPage4.Controls.Add(this.button_UpdateKMZPath);
+            this.tabPage4.Controls.Add(this.button_UpdateExcelPath);
+            this.tabPage4.Controls.Add(this.textBox_NewPDFPath);
+            this.tabPage4.Controls.Add(this.textBox_NewKMZPath);
+            this.tabPage4.Controls.Add(this.textBox_NewExcelPath);
+            this.tabPage4.Controls.Add(this.label_CurrentPDFPath);
+            this.tabPage4.Controls.Add(this.label_CurrentKMZPath);
+            this.tabPage4.Controls.Add(this.label_CurrentExcelPath);
+            this.tabPage4.Controls.Add(this.label_PDFPathMessage);
+            this.tabPage4.Controls.Add(this.label_KMZPathMessage);
+            this.tabPage4.Controls.Add(this.label_ExcelPathMessage);
+            this.tabPage4.Controls.Add(this.label13);
+            this.tabPage4.Controls.Add(this.label12);
+            this.tabPage4.Controls.Add(this.label15);
+            this.tabPage4.Controls.Add(this.label11);
+            this.tabPage4.Controls.Add(this.label14);
+            this.tabPage4.Controls.Add(this.label9);
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage4.Size = new System.Drawing.Size(904, 522);
             this.tabPage4.TabIndex = 1;
-            this.tabPage4.Text = "Admin Access";
+            this.tabPage4.Text = "Folder Paths";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // button_UpdatePDFPath
+            // 
+            this.button_UpdatePDFPath.Location = new System.Drawing.Point(822, 188);
+            this.button_UpdatePDFPath.Name = "button_UpdatePDFPath";
+            this.button_UpdatePDFPath.Size = new System.Drawing.Size(75, 23);
+            this.button_UpdatePDFPath.TabIndex = 4;
+            this.button_UpdatePDFPath.Text = "Update";
+            this.button_UpdatePDFPath.UseVisualStyleBackColor = true;
+            this.button_UpdatePDFPath.Click += new System.EventHandler(this.button_UpdatePDFPath_Click);
+            // 
+            // button_UpdateKMZPath
+            // 
+            this.button_UpdateKMZPath.Location = new System.Drawing.Point(822, 113);
+            this.button_UpdateKMZPath.Name = "button_UpdateKMZPath";
+            this.button_UpdateKMZPath.Size = new System.Drawing.Size(75, 23);
+            this.button_UpdateKMZPath.TabIndex = 4;
+            this.button_UpdateKMZPath.Text = "Update";
+            this.button_UpdateKMZPath.UseVisualStyleBackColor = true;
+            this.button_UpdateKMZPath.Click += new System.EventHandler(this.button_UpdateKMZPath_Click);
+            // 
+            // button_UpdateExcelPath
+            // 
+            this.button_UpdateExcelPath.Location = new System.Drawing.Point(822, 39);
+            this.button_UpdateExcelPath.Name = "button_UpdateExcelPath";
+            this.button_UpdateExcelPath.Size = new System.Drawing.Size(75, 23);
+            this.button_UpdateExcelPath.TabIndex = 4;
+            this.button_UpdateExcelPath.Text = "Update";
+            this.button_UpdateExcelPath.UseVisualStyleBackColor = true;
+            this.button_UpdateExcelPath.Click += new System.EventHandler(this.button_UpdateExcelPath_Click);
+            // 
+            // textBox_NewPDFPath
+            // 
+            this.textBox_NewPDFPath.Location = new System.Drawing.Point(523, 188);
+            this.textBox_NewPDFPath.Name = "textBox_NewPDFPath";
+            this.textBox_NewPDFPath.Size = new System.Drawing.Size(287, 23);
+            this.textBox_NewPDFPath.TabIndex = 3;
+            // 
+            // textBox_NewKMZPath
+            // 
+            this.textBox_NewKMZPath.Location = new System.Drawing.Point(523, 113);
+            this.textBox_NewKMZPath.Name = "textBox_NewKMZPath";
+            this.textBox_NewKMZPath.Size = new System.Drawing.Size(287, 23);
+            this.textBox_NewKMZPath.TabIndex = 3;
+            // 
+            // textBox_NewExcelPath
+            // 
+            this.textBox_NewExcelPath.Location = new System.Drawing.Point(523, 39);
+            this.textBox_NewExcelPath.Name = "textBox_NewExcelPath";
+            this.textBox_NewExcelPath.Size = new System.Drawing.Size(175, 23);
+            this.textBox_NewExcelPath.TabIndex = 3;
+            // 
+            // label_CurrentPDFPath
+            // 
+            this.label_CurrentPDFPath.Location = new System.Drawing.Point(239, 191);
+            this.label_CurrentPDFPath.Name = "label_CurrentPDFPath";
+            this.label_CurrentPDFPath.Size = new System.Drawing.Size(265, 31);
+            this.label_CurrentPDFPath.TabIndex = 2;
+            // 
+            // label_CurrentKMZPath
+            // 
+            this.label_CurrentKMZPath.Location = new System.Drawing.Point(239, 116);
+            this.label_CurrentKMZPath.Name = "label_CurrentKMZPath";
+            this.label_CurrentKMZPath.Size = new System.Drawing.Size(265, 31);
+            this.label_CurrentKMZPath.TabIndex = 2;
+            // 
+            // label_CurrentExcelPath
+            // 
+            this.label_CurrentExcelPath.Location = new System.Drawing.Point(239, 42);
+            this.label_CurrentExcelPath.Name = "label_CurrentExcelPath";
+            this.label_CurrentExcelPath.Size = new System.Drawing.Size(265, 31);
+            this.label_CurrentExcelPath.TabIndex = 2;
+            // 
+            // label_PDFPathMessage
+            // 
+            this.label_PDFPathMessage.AutoSize = true;
+            this.label_PDFPathMessage.Location = new System.Drawing.Point(523, 214);
+            this.label_PDFPathMessage.Name = "label_PDFPathMessage";
+            this.label_PDFPathMessage.Size = new System.Drawing.Size(0, 15);
+            this.label_PDFPathMessage.TabIndex = 2;
+            // 
+            // label_KMZPathMessage
+            // 
+            this.label_KMZPathMessage.AutoSize = true;
+            this.label_KMZPathMessage.Location = new System.Drawing.Point(523, 139);
+            this.label_KMZPathMessage.Name = "label_KMZPathMessage";
+            this.label_KMZPathMessage.Size = new System.Drawing.Size(0, 15);
+            this.label_KMZPathMessage.TabIndex = 2;
+            // 
+            // label_ExcelPathMessage
+            // 
+            this.label_ExcelPathMessage.AutoSize = true;
+            this.label_ExcelPathMessage.Location = new System.Drawing.Point(523, 65);
+            this.label_ExcelPathMessage.Name = "label_ExcelPathMessage";
+            this.label_ExcelPathMessage.Size = new System.Drawing.Size(0, 15);
+            this.label_ExcelPathMessage.TabIndex = 2;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label13.Location = new System.Drawing.Point(240, 12);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(115, 15);
+            this.label13.TabIndex = 2;
+            this.label13.Text = "Current folder path";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label12.Location = new System.Drawing.Point(524, 10);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(98, 15);
+            this.label12.TabIndex = 2;
+            this.label12.Text = "New folder path";
+            // 
+            // label15
+            // 
+            this.label15.Location = new System.Drawing.Point(15, 191);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(184, 31);
+            this.label15.TabIndex = 0;
+            this.label15.Text = "Change the folder path for the PDF reports:";
+            // 
+            // label11
+            // 
+            this.label11.Location = new System.Drawing.Point(15, 116);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(184, 31);
+            this.label11.TabIndex = 0;
+            this.label11.Text = "Change the folder path for the KMZ files:";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(704, 42);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(106, 15);
+            this.label14.TabIndex = 0;
+            this.label14.Text = "(include file name)";
+            // 
+            // label9
+            // 
+            this.label9.Location = new System.Drawing.Point(15, 39);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(206, 34);
+            this.label9.TabIndex = 0;
+            this.label9.Text = "Change the folder path for the soils record excel file:";
             // 
             // button_Login
             // 
@@ -508,6 +694,8 @@
             this.tabControl_Login.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -553,5 +741,23 @@
         internal ListView listView_City;
         internal ListView listView_ProjName;
         internal Label label_NoResults;
+        private TextBox textBox_NewExcelPath;
+        private Label label12;
+        private Label label9;
+        private Label label_CurrentExcelPath;
+        private Label label13;
+        private Button button_UpdateKMZPath;
+        private Button button_UpdateExcelPath;
+        private TextBox textBox_NewKMZPath;
+        private Label label_CurrentKMZPath;
+        private Label label11;
+        private Label label14;
+        private Label label_KMZPathMessage;
+        private Label label_ExcelPathMessage;
+        private Button button_UpdatePDFPath;
+        private TextBox textBox_NewPDFPath;
+        private Label label_CurrentPDFPath;
+        private Label label_PDFPathMessage;
+        private Label label15;
     }
 }

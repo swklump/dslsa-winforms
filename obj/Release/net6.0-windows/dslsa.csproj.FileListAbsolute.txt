@@ -35,3 +35,4 @@ C:\Users\klump\OneDrive\Programming\dslsa\obj\Release\net6.0-windows\dslsa.genru
 C:\Users\klump\OneDrive\Programming\dslsa\obj\Release\net6.0-windows\ref\dslsa.dll
 C:\Users\klump\OneDrive\Programming\dslsa\bin\Release\net6.0-windows\System.Data.OleDb.dll
 C:\Users\klump\OneDrive\Programming\dslsa\bin\Release\net6.0-windows\runtimes\win\lib\net6.0\System.Data.OleDb.dll
+C:\Users\klump\OneDrive\Programming\dslsa\obj\Release\net6.0-windows\dslsa.Form2.resources

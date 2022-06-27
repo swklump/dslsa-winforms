@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO.Compression;
 
 namespace dslsa
@@ -13,7 +14,8 @@ namespace dslsa
         public Form f = Application.OpenForms["Form1"];
         public List<string> report_nums = new List<string>();
         private FolderBrowserDialog folderBrowserDialog1;
-        private String pdffolder = @"C:\Users\klump\OneDrive\Programming\";
+        private String pdffolder;
+        private String dbpath = @"C:\Users\klump\OneDrive\Programming\dslsa\dslsa_database.db";
 
         //NAVIGATION METHODS............................................................
         private void button_MainMenu_Click(object sender, EventArgs e)
@@ -57,6 +59,26 @@ namespace dslsa
 
         private void button_Submit_Click(object sender, EventArgs e)
         {
+            //get pdf folder
+            //setup database connection
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql = string.Empty;
+
+            //get excel report path
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+
+                    while (rdr.Read())
+                    {
+                        pdffolder = Convert.ToString(rdr["value"]) + @"\";
+                    }
+                }
+            }
+
             //save pdfs if desired
             string open_save = comboBox_OpenSave.SelectedItem.ToString();
             if (open_save == "Save PDFs to Folder" || open_save == "Open and Save PDFs")
@@ -92,7 +114,7 @@ namespace dslsa
 
                 //start outlook message
 
-                System.Diagnostics.Process.Start(@"mailto:name@domain.com?Subject=SubjTxt&Body=Bod_Txt&Attachment=C:\Users\klump\OneDrive\file.txt");
+                Process.Start(@"mailto:name@domain.com?Subject=SubjTxt&Body=Bod_Txt&Attachment=C:\Users\klump\OneDrive\file.txt");
 
                 this.Close();
                 ((Form1)f).Show();
