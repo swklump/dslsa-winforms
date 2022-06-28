@@ -36,3 +36,11 @@ C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\dslsa.pdb
 C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\dslsa.genruntimeconfig.cache
 C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\ref\dslsa.dll
 C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\dslsa.Form2.resources
+C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\Microsoft.Office.Interop.Outlook.dll
+C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\Microsoft.Office.Interop.Word.dll
+C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\Interop.Microsoft.Office.Core.dll
+C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\dslsa.csproj.ResolveComReference.cache
+C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\Office.dll
+C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\NetOffice.dll
+C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\OfficeApi.dll
+C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\VBIDEApi.dll

@@ -31,7 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.label_NoResults = new System.Windows.Forms.Label();
+            this.button_Deselect = new System.Windows.Forms.Button();
+            this.textBox_Results = new System.Windows.Forms.TextBox();
             this.gmap = new GMap.NET.WindowsForms.GMapControl();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label4 = new System.Windows.Forms.Label();
@@ -109,7 +110,8 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.label_NoResults);
+            this.tabPage1.Controls.Add(this.button_Deselect);
+            this.tabPage1.Controls.Add(this.textBox_Results);
             this.tabPage1.Controls.Add(this.gmap);
             this.tabPage1.Controls.Add(this.tableLayoutPanel2);
             this.tabPage1.Controls.Add(this.tableLayoutPanel1);
@@ -124,12 +126,26 @@
             this.tabPage1.Text = "Main Application";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // label_NoResults
+            // button_Deselect
             // 
-            this.label_NoResults.Location = new System.Drawing.Point(609, 10);
-            this.label_NoResults.Name = "label_NoResults";
-            this.label_NoResults.Size = new System.Drawing.Size(537, 44);
-            this.label_NoResults.TabIndex = 6;
+            this.button_Deselect.Location = new System.Drawing.Point(311, 9);
+            this.button_Deselect.Name = "button_Deselect";
+            this.button_Deselect.Size = new System.Drawing.Size(105, 23);
+            this.button_Deselect.TabIndex = 8;
+            this.button_Deselect.Text = "Deselect All";
+            this.button_Deselect.UseVisualStyleBackColor = true;
+            this.button_Deselect.Click += new System.EventHandler(this.button_Deselect_Click);
+            // 
+            // textBox_Results
+            // 
+            this.textBox_Results.BackColor = System.Drawing.SystemColors.Control;
+            this.textBox_Results.Location = new System.Drawing.Point(609, 7);
+            this.textBox_Results.Multiline = true;
+            this.textBox_Results.Name = "textBox_Results";
+            this.textBox_Results.ReadOnly = true;
+            this.textBox_Results.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox_Results.Size = new System.Drawing.Size(537, 44);
+            this.textBox_Results.TabIndex = 7;
             // 
             // gmap
             // 
@@ -740,7 +756,6 @@
         internal ListView listView_County;
         internal ListView listView_City;
         internal ListView listView_ProjName;
-        internal Label label_NoResults;
         private TextBox textBox_NewExcelPath;
         private Label label12;
         private Label label9;
@@ -759,5 +774,7 @@
         private Label label_CurrentPDFPath;
         private Label label_PDFPathMessage;
         private Label label15;
+        internal TextBox textBox_Results;
+        private Button button_Deselect;
     }
 }

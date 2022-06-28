@@ -19,5 +19,6 @@
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgEntityFramework Condition=" '$(PkgEntityFramework)' == '' ">C:\Users\klump\.nuget\packages\entityframework\6.4.4</PkgEntityFramework>
     <PkgSystem_Data_SQLite_EF6 Condition=" '$(PkgSystem_Data_SQLite_EF6)' == '' ">C:\Users\klump\.nuget\packages\system.data.sqlite.ef6\1.0.115.5</PkgSystem_Data_SQLite_EF6>
+    <PkgNetOffice_Core Condition=" '$(PkgNetOffice_Core)' == '' ">C:\Users\klump\.nuget\packages\netoffice.core\1.7.4.11</PkgNetOffice_Core>
   </PropertyGroup>
 </Project>

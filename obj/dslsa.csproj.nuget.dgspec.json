@@ -48,9 +48,29 @@
               "target": "Package",
               "version": "[2.1.6, )"
             },
+            "Microsoft.Office.Interop.Outlook": {
+              "target": "Package",
+              "version": "[15.0.4797.1004, )"
+            },
+            "Microsoft.Office.Interop.Word": {
+              "target": "Package",
+              "version": "[15.0.4797.1004, )"
+            },
+            "MicrosoftOfficeCore": {
+              "target": "Package",
+              "version": "[15.0.0, )"
+            },
+            "NetOffice.Core": {
+              "target": "Package",
+              "version": "[1.7.4.11, )"
+            },
             "System.Data.OleDb": {
               "target": "Package",
               "version": "[6.0.0, )"
+            },
+            "System.Runtime.InteropServices": {
+              "target": "Package",
+              "version": "[4.3.0, )"
             }
           },
           "imports": [

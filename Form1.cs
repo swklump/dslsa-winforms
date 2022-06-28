@@ -25,8 +25,7 @@ namespace dslsa
         private String masteruser = "";
         private String masterpass = "";
         public List<string> report_nums = new List<string>();
-        private String dbpath = @"C:\Users\klump\OneDrive\Programming\dslsa\dslsa_database.db";
-        //private String dbpath = @"\\ANC-FS\ANC-Projects\Geotech\App Folder";
+        private String dbpath = @"dslsa_database.db";
         private SQLiteConnection con;
 
 
@@ -36,6 +35,8 @@ namespace dslsa
         //LOAD OPTIONS METHODS.....................................................................
         private void FormMain_Load(object sender, EventArgs e)
         {
+            textBox_Results.BackColor = Color.White;
+
             //load options for states from database
             String sql;
             List<string> state_tables = new List<string>();
@@ -590,11 +591,8 @@ namespace dslsa
 
             switch (tab.SelectedIndex)
             {
-                case 2:
-                    AcceptButton = button_Login;
-                    break;
                 case 1:
-                    //AcceptButton = this.button_2;
+                    AcceptButton = button_Login;
                     break;
                 case 0:
                     AcceptButton = button_SearchPDFs;
@@ -647,13 +645,13 @@ namespace dslsa
             //send error message if no selections made
             if (cols.Count == 1)
             {
-                label_NoResults.Text = "Please make at least one selection from a list.";
-                label_NoResults.ForeColor = Color.Red;
+                textBox_Results.Text = "Please make at least one selection from a list.";
+                textBox_Results.ForeColor = Color.Red;
                 return;
             }
 
-            label_NoResults.Text = "";
-            label_NoResults.ForeColor = Color.Black;
+            textBox_Results.Text = "";
+            textBox_Results.ForeColor = Color.Black;
 
             string colnames = string.Join(",", cols.ToArray());
             string query_wherestring = string.Join(" AND ", query_whereclause.ToArray());
@@ -683,6 +681,11 @@ namespace dslsa
             s.Show();
         }
 
-
+        private void button_Deselect_Click(object sender, EventArgs e)
+        {
+            listView_PN.SelectedItems.Clear();
+            listView_ProjName.SelectedItems.Clear();
+            listView_City.SelectedItems.Clear();
+        }
     }
 }

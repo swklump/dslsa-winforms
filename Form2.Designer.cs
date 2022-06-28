@@ -29,19 +29,13 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
-            this.label_SearchResults = new System.Windows.Forms.Label();
             this.label_WhatToDo = new System.Windows.Forms.Label();
-            this.comboBox_OpenSave = new System.Windows.Forms.ComboBox();
-            this.button_Submit = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
+            this.button_OpenPDFs = new System.Windows.Forms.Button();
+            this.button_SavePDFs = new System.Windows.Forms.Button();
+            this.button_EmailPDFs = new System.Windows.Forms.Button();
+            this.textBox_SearchResults = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
-            // 
-            // label_SearchResults
-            // 
-            this.label_SearchResults.Location = new System.Drawing.Point(26, 9);
-            this.label_SearchResults.Name = "label_SearchResults";
-            this.label_SearchResults.Size = new System.Drawing.Size(345, 57);
-            this.label_SearchResults.TabIndex = 0;
             // 
             // label_WhatToDo
             // 
@@ -52,32 +46,9 @@
             this.label_WhatToDo.TabIndex = 1;
             this.label_WhatToDo.Text = "What would you like to do with the PDFs?";
             // 
-            // comboBox_OpenSave
-            // 
-            this.comboBox_OpenSave.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox_OpenSave.FormattingEnabled = true;
-            this.comboBox_OpenSave.Items.AddRange(new object[] {
-            "Open PDFs",
-            "Save PDFs to Folder",
-            "Open and Save PDFs"});
-            this.comboBox_OpenSave.Location = new System.Drawing.Point(257, 80);
-            this.comboBox_OpenSave.Name = "comboBox_OpenSave";
-            this.comboBox_OpenSave.Size = new System.Drawing.Size(142, 23);
-            this.comboBox_OpenSave.TabIndex = 2;
-            // 
-            // button_Submit
-            // 
-            this.button_Submit.Location = new System.Drawing.Point(414, 79);
-            this.button_Submit.Name = "button_Submit";
-            this.button_Submit.Size = new System.Drawing.Size(111, 23);
-            this.button_Submit.TabIndex = 3;
-            this.button_Submit.Text = "Submit";
-            this.button_Submit.UseVisualStyleBackColor = true;
-            this.button_Submit.Click += new System.EventHandler(this.button_Submit_Click);
-            // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(385, 9);
+            this.button2.Location = new System.Drawing.Point(274, 8);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(140, 23);
             this.button2.TabIndex = 4;
@@ -85,17 +56,59 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button_MainMenu_Click);
             // 
+            // button_OpenPDFs
+            // 
+            this.button_OpenPDFs.Location = new System.Drawing.Point(26, 115);
+            this.button_OpenPDFs.Name = "button_OpenPDFs";
+            this.button_OpenPDFs.Size = new System.Drawing.Size(111, 23);
+            this.button_OpenPDFs.TabIndex = 3;
+            this.button_OpenPDFs.Text = "Open PDFs";
+            this.button_OpenPDFs.UseVisualStyleBackColor = true;
+            this.button_OpenPDFs.Click += new System.EventHandler(this.button_OpenPDFs_Click);
+            // 
+            // button_SavePDFs
+            // 
+            this.button_SavePDFs.Location = new System.Drawing.Point(165, 115);
+            this.button_SavePDFs.Name = "button_SavePDFs";
+            this.button_SavePDFs.Size = new System.Drawing.Size(111, 23);
+            this.button_SavePDFs.TabIndex = 3;
+            this.button_SavePDFs.Text = "Save PDFs";
+            this.button_SavePDFs.UseVisualStyleBackColor = true;
+            this.button_SavePDFs.Click += new System.EventHandler(this.button_SavePDFs_Click);
+            // 
+            // button_EmailPDFs
+            // 
+            this.button_EmailPDFs.Location = new System.Drawing.Point(303, 115);
+            this.button_EmailPDFs.Name = "button_EmailPDFs";
+            this.button_EmailPDFs.Size = new System.Drawing.Size(111, 23);
+            this.button_EmailPDFs.TabIndex = 3;
+            this.button_EmailPDFs.Text = "Email PDFs";
+            this.button_EmailPDFs.UseVisualStyleBackColor = true;
+            this.button_EmailPDFs.Click += new System.EventHandler(this.button_EmailPDFs_Click);
+            // 
+            // textBox_SearchResults
+            // 
+            this.textBox_SearchResults.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.textBox_SearchResults.Location = new System.Drawing.Point(26, 9);
+            this.textBox_SearchResults.Multiline = true;
+            this.textBox_SearchResults.Name = "textBox_SearchResults";
+            this.textBox_SearchResults.ReadOnly = true;
+            this.textBox_SearchResults.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox_SearchResults.Size = new System.Drawing.Size(226, 57);
+            this.textBox_SearchResults.TabIndex = 5;
+            // 
             // Form2
             // 
-            this.AcceptButton = this.button_Submit;
+            this.AcceptButton = this.button_OpenPDFs;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(537, 121);
+            this.ClientSize = new System.Drawing.Size(432, 157);
+            this.Controls.Add(this.textBox_SearchResults);
             this.Controls.Add(this.button2);
-            this.Controls.Add(this.button_Submit);
-            this.Controls.Add(this.comboBox_OpenSave);
+            this.Controls.Add(this.button_EmailPDFs);
+            this.Controls.Add(this.button_SavePDFs);
+            this.Controls.Add(this.button_OpenPDFs);
             this.Controls.Add(this.label_WhatToDo);
-            this.Controls.Add(this.label_SearchResults);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form2";
@@ -109,11 +122,11 @@
         }
 
         #endregion
-
-        private Label label_SearchResults;
         private Label label_WhatToDo;
-        private ComboBox comboBox_OpenSave;
-        private Button button_Submit;
         private Button button2;
+        private Button button_OpenPDFs;
+        private Button button_SavePDFs;
+        private Button button_EmailPDFs;
+        private TextBox textBox_SearchResults;
     }
 }
