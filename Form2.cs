@@ -132,18 +132,80 @@ namespace dslsa
         {
             //folder select dialog
             folderBrowserDialog1 = new FolderBrowserDialog();
-            folderBrowserDialog1.ShowDialog();
+            //folderBrowserDialog1.ShowDialog();
             string folderName = String.Empty;
-            folderName = folderBrowserDialog1.SelectedPath;
-            Directory.CreateDirectory(folderName + @"\SoilReportPDFs");
+
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                folderName = folderBrowserDialog1.SelectedPath;
+                try { Directory.CreateDirectory(folderName + @"\SoilReportPDFs"); }
+                catch (UnauthorizedAccessException)
+                {
+                    textBox_SearchResults.Text = "Cannot save files in that folder. Please select a different folder.";
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    return;
+                }
 
 
-            //copy files to selected folder
+                //copy files to selected folder
+                List<string> pdfsnotfound = new List<string>();
+                foreach (var report in report_nums)
+                {
+                    string sourceFile = pdffolder + report + ".pdf";
+                    string destFile = folderName + @"\SoilReportPDFs\" + report + ".pdf";
+                    try
+                    {
+                        File.Copy(sourceFile, destFile, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        pdfsnotfound.Add(report);
+                    }
+                }
+
+
+                //zip files
+                try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
+                catch (UnauthorizedAccessException)
+                {
+                    Directory.Delete(folderName + @"\SoilReportPDFs", true);
+                    textBox_SearchResults.Text = "Cannot save files in that folder. Please select a different folder.";
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    return;
+                }
+                try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
+                catch (IOException)
+                {
+                    textBox_SearchResults.Text = "A folder called 'SoilsReportPDFs' already exists in the directory specified. Please delete the existing folder or select a different directory.";
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    return;
+                }
+
+                textBox_SearchResults.Text = "PDF saved in specified folder!";
+                textBox_SearchResults.ForeColor = Color.Green;
+            }
+            else
+            {
+                textBox_SearchResults.Text = "No save folder specified.";
+                textBox_SearchResults.ForeColor = Color.Red;
+            }
+
+
+        }
+
+        private void button_EmailPDFs_Click(object sender, EventArgs e)
+        {
+
+            //create a temp folder
+            string tempPath = Path.GetTempPath();
+            Directory.CreateDirectory(tempPath + @"\SoilReportPDFs");
+
+            //copy files to temp folder
             List<string> pdfsnotfound = new List<string>();
             foreach (var report in report_nums)
             {
                 string sourceFile = pdffolder + report + ".pdf";
-                string destFile = folderName + @"\SoilReportPDFs\" + report + ".pdf";
+                string destFile = tempPath + @"\SoilReportPDFs\" + report + ".pdf";
                 try
                 {
                     File.Copy(sourceFile, destFile, true);
@@ -153,10 +215,8 @@ namespace dslsa
                     pdfsnotfound.Add(report);
                 }
             }
-
-
-            //zip files
-            try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
+            //zip folder
+            try { ZipFile.CreateFromDirectory(tempPath + @"\SoilReportPDFs", tempPath + @"\SoilReportPDFs.zip"); }
             catch (IOException)
             {
                 textBox_SearchResults.Text = "A folder called 'SoilsReportPDFs' already exists in the directory specified. Please delete the existing folder or select a different directory.";
@@ -164,27 +224,25 @@ namespace dslsa
                 return;
             }
 
-            textBox_SearchResults.Text = "PDF saved in specified folder!";
-            textBox_SearchResults.ForeColor = Color.Green;
-        }
-
-        private void button_EmailPDFs_Click(object sender, EventArgs e)
-        {
-            //start outlook message
+            //create outlook message
             Outlook.Application oApp = new Outlook.Application();
             Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
 
             oMsg.Subject = "Soils Report PDF Attached";
             oMsg.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
-            oMsg.HTMLBody = "Hello, see attached for requested soils report.";
+            oMsg.HTMLBody = "Hello,<br/>";
+            oMsg.HTMLBody += "<br/>";
+            oMsg.HTMLBody += "See attached for requested soils report.<br/>";
+            oMsg.HTMLBody += "<br/>";
+            oMsg.HTMLBody += "Thanks,";
             int pos = (int)oMsg.Body.Length + 1;
             int attachType = (int)Outlook.OlAttachmentType.olByValue;
-
-            //send files to a zipped folder, then attach
-            //see how to build a temp zipped folder
-
-            Outlook.Attachment oAttach = oMsg.Attachments.Add(@"C:\Users\klump\OneDrive\Programming\5990.zip", attachType, pos, "SoilsReports.zip");
+            Outlook.Attachment oAttach = oMsg.Attachments.Add(tempPath + @"\SoilReportPDFs.zip", attachType, pos, "SoilReportPDFs.zip");
             oMsg.Display(false); //In order to display it in modal inspector change the argument to true
+
+            //delete the temp folders
+            Directory.Delete(tempPath + @"\SoilReportPDFs", true);
+            File.Delete(tempPath + @"\SoilReportPDFs.zip");
 
 
             textBox_SearchResults.Text = "Email draft has been successfully opened!";

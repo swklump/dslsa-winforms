@@ -59,9 +59,12 @@
             this.label_LoginMessage = new System.Windows.Forms.Label();
             this.tabControl_Login = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.label_UpdateDB = new System.Windows.Forms.Label();
-            this.button_UpdateDB = new System.Windows.Forms.Button();
-            this.label10 = new System.Windows.Forms.Label();
+            this.label_UpdateKMZDB = new System.Windows.Forms.Label();
+            this.label_UpdateRecordDB = new System.Windows.Forms.Label();
+            this.button_UpdateKMZDB = new System.Windows.Forms.Button();
+            this.button_UpdateRecordDB = new System.Windows.Forms.Button();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label_DBUpdateTime = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.button_UpdatePDFPath = new System.Windows.Forms.Button();
             this.button_UpdateKMZPath = new System.Windows.Forms.Button();
@@ -415,9 +418,12 @@
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.label_UpdateDB);
-            this.tabPage3.Controls.Add(this.button_UpdateDB);
-            this.tabPage3.Controls.Add(this.label10);
+            this.tabPage3.Controls.Add(this.label_UpdateKMZDB);
+            this.tabPage3.Controls.Add(this.label_UpdateRecordDB);
+            this.tabPage3.Controls.Add(this.button_UpdateKMZDB);
+            this.tabPage3.Controls.Add(this.button_UpdateRecordDB);
+            this.tabPage3.Controls.Add(this.label16);
+            this.tabPage3.Controls.Add(this.label_DBUpdateTime);
             this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
@@ -426,31 +432,57 @@
             this.tabPage3.Text = "Database Update";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // label_UpdateDB
+            // label_UpdateKMZDB
             // 
-            this.label_UpdateDB.Location = new System.Drawing.Point(19, 76);
-            this.label_UpdateDB.Name = "label_UpdateDB";
-            this.label_UpdateDB.Size = new System.Drawing.Size(415, 45);
-            this.label_UpdateDB.TabIndex = 2;
+            this.label_UpdateKMZDB.Location = new System.Drawing.Point(19, 208);
+            this.label_UpdateKMZDB.Name = "label_UpdateKMZDB";
+            this.label_UpdateKMZDB.Size = new System.Drawing.Size(415, 179);
+            this.label_UpdateKMZDB.TabIndex = 2;
             // 
-            // button_UpdateDB
+            // label_UpdateRecordDB
             // 
-            this.button_UpdateDB.Location = new System.Drawing.Point(19, 38);
-            this.button_UpdateDB.Name = "button_UpdateDB";
-            this.button_UpdateDB.Size = new System.Drawing.Size(143, 23);
-            this.button_UpdateDB.TabIndex = 1;
-            this.button_UpdateDB.Text = "Update Database";
-            this.button_UpdateDB.UseVisualStyleBackColor = true;
-            this.button_UpdateDB.Click += new System.EventHandler(this.buttonUpdateDB_Click);
+            this.label_UpdateRecordDB.Location = new System.Drawing.Point(19, 76);
+            this.label_UpdateRecordDB.Name = "label_UpdateRecordDB";
+            this.label_UpdateRecordDB.Size = new System.Drawing.Size(415, 45);
+            this.label_UpdateRecordDB.TabIndex = 2;
             // 
-            // label10
+            // button_UpdateKMZDB
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(19, 19);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(143, 15);
-            this.label10.TabIndex = 0;
-            this.label10.Text = "Database last updated on:";
+            this.button_UpdateKMZDB.Location = new System.Drawing.Point(19, 168);
+            this.button_UpdateKMZDB.Name = "button_UpdateKMZDB";
+            this.button_UpdateKMZDB.Size = new System.Drawing.Size(225, 23);
+            this.button_UpdateKMZDB.TabIndex = 1;
+            this.button_UpdateKMZDB.Text = "Update KMZ Database";
+            this.button_UpdateKMZDB.UseVisualStyleBackColor = true;
+            this.button_UpdateKMZDB.Click += new System.EventHandler(this.button_UpdateKMZDB_Click);
+            // 
+            // button_UpdateRecordDB
+            // 
+            this.button_UpdateRecordDB.Location = new System.Drawing.Point(19, 38);
+            this.button_UpdateRecordDB.Name = "button_UpdateRecordDB";
+            this.button_UpdateRecordDB.Size = new System.Drawing.Size(225, 23);
+            this.button_UpdateRecordDB.TabIndex = 1;
+            this.button_UpdateRecordDB.Text = "Update Soils Record (Excel) Database";
+            this.button_UpdateRecordDB.UseVisualStyleBackColor = true;
+            this.button_UpdateRecordDB.Click += new System.EventHandler(this.buttonUpdateRecordDB_Click);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(19, 150);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(143, 15);
+            this.label16.TabIndex = 0;
+            this.label16.Text = "Database last updated on:";
+            // 
+            // label_DBUpdateTime
+            // 
+            this.label_DBUpdateTime.AutoSize = true;
+            this.label_DBUpdateTime.Location = new System.Drawing.Point(19, 19);
+            this.label_DBUpdateTime.Name = "label_DBUpdateTime";
+            this.label_DBUpdateTime.Size = new System.Drawing.Size(143, 15);
+            this.label_DBUpdateTime.TabIndex = 0;
+            this.label_DBUpdateTime.Text = "Database last updated on:";
             // 
             // tabPage4
             // 
@@ -748,10 +780,10 @@
         private Label label_LoginMessage;
         private TabControl tabControl_Login;
         private TabPage tabPage3;
-        private Button button_UpdateDB;
-        private Label label10;
+        private Button button_UpdateRecordDB;
+        private Label label_DBUpdateTime;
         private TabPage tabPage4;
-        private Label label_UpdateDB;
+        private Label label_UpdateRecordDB;
         internal ListView listView_PN;
         internal ListView listView_County;
         internal ListView listView_City;
@@ -776,5 +808,8 @@
         private Label label15;
         internal TextBox textBox_Results;
         private Button button_Deselect;
+        private Button button_UpdateKMZDB;
+        private Label label16;
+        private Label label_UpdateKMZDB;
     }
 }

@@ -63,7 +63,23 @@ namespace dslsa
                 comboBox_State.Items.Add(tab);
 
             }
+
+            //set last update datetime for databases
+            string record_datetimeupdate = String.Empty;
+            sql = @"SELECT value FROM FOLDERPATHS WHERE type ='record_update_datetime'";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        record_datetimeupdate = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+            label_DBUpdateTime.Text = "Database last updated on: " + record_datetimeupdate;
             con.Close();
+
             comboBox_State.SelectedItem = "Alaska";
 
             gmap.DragButton = MouseButtons.Left;
@@ -194,7 +210,7 @@ namespace dslsa
             string filename;
 
 
-            //get excel report path
+            //get kmz path
             using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -207,7 +223,6 @@ namespace dslsa
             }
 
             //unzip kmz
-
             var file = File.OpenRead(fname + @"\Bethel.kmz");
             var zip = new ZipArchive(file, ZipArchiveMode.Read);
             XNamespace ns = "http://www.opengis.net/kml/2.2";
@@ -448,11 +463,11 @@ namespace dslsa
 
         }
 
-        private void buttonUpdateDB_Click(object sender, EventArgs e)
+        private void buttonUpdateRecordDB_Click(object sender, EventArgs e)
         {
 
-            label_UpdateDB.Text = "Uploading data. This operation may take up to 10 seconds.";
-            label_UpdateDB.ForeColor = Color.Blue;
+            label_UpdateRecordDB.Text = "Uploading data. This operation may take up to 10 seconds.";
+            label_UpdateRecordDB.ForeColor = Color.Blue;
 
             //setup database connection
             SQLiteCommand cmd_sql;
@@ -517,9 +532,18 @@ namespace dslsa
                                 objConn.Close();
 
                                 //create database table
-                                sql = @"CREATE TABLE IF NOT EXISTS " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(" +
-                                    "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255)" +
-                                    ")";
+                                if (sheetName.Substring(0, sheetName.Length - 1) == "Alaska")
+                                {
+                                    sql = @"CREATE TABLE IF NOT EXISTS ALASKA(" +
+                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255)" +
+                                        ")";
+                                }
+                                else
+                                {
+                                    sql = @"CREATE TABLE IF NOT EXISTS " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(" +
+                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255)" +
+                                        ")";
+                                }
                                 cmd_sql = new SQLiteCommand(sql, con);
                                 cmd_sql.ExecuteNonQuery();
 
@@ -528,42 +552,87 @@ namespace dslsa
                                 cmd_sql = new SQLiteCommand(sql, con);
                                 cmd_sql.ExecuteNonQuery();
 
-                                //send datatable to database
+                                //send datatable to database, Alaska tables are different than others
                                 cmd_sql = new SQLiteCommand();
-                                using (cmd_sql = new SQLiteCommand(con))
+                                if (sheetName.Substring(0, sheetName.Length - 1) == "Alaska")
                                 {
-                                    using (var transaction = con.BeginTransaction())
+                                    using (cmd_sql = new SQLiteCommand(con))
                                     {
-                                        foreach (DataRow dataRow in dtResult.Rows)
+                                        using (var transaction = con.BeginTransaction())
                                         {
-                                            cmd_sql.CommandText = "INSERT INTO " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(report,projectnumber,client,projectname,area,city) VALUES (" +
-                                                "'" + dataRow[0].ToString().Replace("'", "''") + "'," +
-                                                "'" + dataRow[1].ToString().Replace("'", "''") + "'," +
-                                                "'" + dataRow[2].ToString().Replace("'", "''") + "'," +
-                                                "'" + dataRow[3].ToString().Replace("'", "''") + "'," +
-                                                "'" + dataRow[4].ToString().Replace("'", "''") + "'," +
-                                                "'" + dataRow[5].ToString().Replace("'", "''") + "'" +
-                                                ")";
-                                            cmd_sql.ExecuteNonQuery();
-                                        }
-                                        transaction.Commit();
-                                    }
+                                            foreach (DataRow dataRow in dtResult.Rows)
+                                            {
+                                                cmd_sql.CommandText = "INSERT INTO ALASKA(report,projectnumber,client,projectname,area,city,anchoragegrid) VALUES (";
+                                                for (int i = 0; i < 7; i++)
+                                                {
+                                                    if (i == 6)
+                                                    {
+                                                        cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "'";
+                                                    }
+                                                    else
+                                                    {
+                                                        cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "',";
+                                                    }
+                                                }
 
+                                                cmd_sql.CommandText = cmd_sql.CommandText + ")";
+                                                cmd_sql.ExecuteNonQuery();
+                                            }
+                                            transaction.Commit();
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    using (cmd_sql = new SQLiteCommand(con))
+                                    {
+                                        using (var transaction = con.BeginTransaction())
+                                        {
+                                            foreach (DataRow dataRow in dtResult.Rows)
+                                            {
+                                                cmd_sql.CommandText = "INSERT INTO " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(report,projectnumber,client,projectname,city) VALUES (";
+                                                for (int i = 0; i < 5; i++)
+                                                {
+                                                    if (i == 4)
+                                                    {
+                                                        cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "'";
+                                                    }
+                                                    else
+                                                    {
+                                                        cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "',";
+                                                    }
+                                                }
+                                                cmd_sql.CommandText = cmd_sql.CommandText + ")";
+                                                cmd_sql.ExecuteNonQuery();
+                                            }
+                                            transaction.Commit();
+                                        }
+                                    }
                                 }
                             }
-
                         }
                     }
 
-                    label_UpdateDB.Text = "Upload complete!";
-                    label_UpdateDB.ForeColor = Color.Green;
+                    //reset datetime of update
+                    DateTime now = DateTime.Now;
+                    sql = "DELETE FROM FOLDERPATHS WHERE type='record_update_datetime'";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+                    sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('record_update_datetime','" + now + "')";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+                    label_DBUpdateTime.Text = "Database last updated on: " + now;
+
+                    label_UpdateRecordDB.Text = "Upload complete!";
+                    label_UpdateRecordDB.ForeColor = Color.Green;
                 }
 
             }
             catch (Exception)
             {
-                label_UpdateDB.Text = "There was an error updating the database. Please verify the soils report record excel file exists in the folder entered in the Folder Paths tab.";
-                label_UpdateDB.ForeColor = Color.Red;
+                label_UpdateRecordDB.Text = "There was an error updating the database. Please verify the soils report record excel file exists in the folder entered in the Folder Paths tab.";
+                label_UpdateRecordDB.ForeColor = Color.Red;
             }
 
             con.Close();
@@ -571,10 +640,169 @@ namespace dslsa
 
         }
 
+        private void button_UpdateKMZDB_Click(object sender, EventArgs e)
+        {
+            label_UpdateKMZDB.Text = "Uploading data. This operation may take up to 10 seconds.";
+            label_UpdateKMZDB.ForeColor = Color.Blue;
+
+            //setup database connection
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql = string.Empty;
+            string fname = string.Empty;
+
+            //get kmz path
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        fname = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+
+            //get kmz file names
+            string searchstring;
+            int startindex;
+            int endindex;
+            string reportnum;
+            string state_name;
+            //loop through each state folder in the kmz path
+            List<string> final_files = new List<string>();
+            List<string> directories_states = Directory.GetDirectories(fname).ToList();
+            foreach (string dir_state in directories_states)
+            {
+                state_name = dir_state.Replace(fname + @"\", "").ToUpper();
+                //loop through each city folder in the state folder
+                List<string> directories_cities = Directory.GetDirectories(dir_state).ToList();
+                foreach (string dir_city in directories_cities)
+                {
+                    //loop through each kmz file in the city folder
+                    List<string> kmz_files = Directory.GetFiles(dir_city, "*.kmz").ToList();
+                    foreach (string kmz_file in kmz_files)
+                    {
+                        if (kmz_file.ToLower().Contains("redfiles") && !kmz_file.ToLower().Contains("project"))
+                        {
+                            final_files.Add(kmz_file);
+                        }
+                    }
+                }
+
+                IDictionary<string, List<string>> pointDict = new Dictionary<string, List<string>>();
+                pointDict.Add("report", new List<string>());
+                pointDict.Add("lat", new List<string>());
+                pointDict.Add("lon", new List<string>());
+                XNamespace ns = "http://www.opengis.net/kml/2.2";
+
+                //loop through each file and parse kmz
+                foreach (string file in final_files)
+                {
+                    var file_open = File.OpenRead(file);
+                    var zip = new ZipArchive(file_open, ZipArchiveMode.Read);
+                    var stream = zip.GetEntry("doc.kml").Open();
+                    XDocument xDoc = XDocument.Load(stream);
+
+                    if (xDoc != null)
+                    {
+                        var placemarks = xDoc.Root.Element(ns + "Document").Element(ns + "Folder").Elements(ns + "Placemark");
+                        foreach (var place in placemarks)
+                        {
+                            var coords = place.Element(ns + "Point").Element(ns + "coordinates").Value;
+                            coords = coords.Substring(0, coords.LastIndexOf(','));
+                            pointDict["lon"].Add(coords.Substring(0, coords.IndexOf(',')));
+                            pointDict["lat"].Add(coords.Substring(coords.IndexOf(',') + 1));
+
+                            var desc = place.Element(ns + "description").Value;
+
+                            //get file number
+                            searchstring = "<td>File</td>";
+                            if (desc.IndexOf(searchstring) == -1)
+                            {
+                                searchstring = "<td>redfile</td>";
+                            }
+                            startindex = desc.IndexOf(searchstring) + searchstring.Length;
+                            endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
+                            reportnum = desc.Substring(startindex, endindex - startindex);
+                            pointDict["report"].Add(reportnum.Substring(6, reportnum.Length - 13));
+
+                        }
+                    }
+                }
+
+                //create database table
+                sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT)";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                //clear database table
+                sql = "DELETE FROM KMZ";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                //add dictionary to the database
+                for (int i = 0; i < pointDict["report"].Count(); i++)
+                {
+                    sql = "INSERT INTO KMZ (report,lat,lon) VALUES ('" + pointDict["report"][i] + "','" + pointDict["lat"][i] + "','" + pointDict["lon"][i] + "')";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+                }
+
+                //create a join table with record columns
+                if (state_name == "ALASKA")
+                {
+                    //create the join table
+                    sql = "CREATE TABLE IF NOT EXISTS ALASKAKMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255))";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+
+                    //clear database table
+                    sql = "DELETE FROM ALASKAKMZ";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+
+                    sql = "INSERT INTO ALASKAKMZ SELECT KMZ.report, lat, lon, ALASKA.projectnumber, client, projectname, area, city, anchoragegrid FROM KMZ " +
+                        "LEFT JOIN ALASKA " +
+                        "ON (KMZ.report=ALASKA.report)";
+
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+                }
+                else
+                {
+                    //create the join table
+                    sql = "CREATE TABLE IF NOT EXISTS " + state_name + "KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255))";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+
+                    //clear database table
+                    sql = "DELETE FROM " + state_name + "KMZ";
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+
+                    sql = "INSERT INTO " + state_name + "KMZ SELECT KMZ.report, lat, lon, projectnumber, client, projectname, city FROM KMZ " +
+                        "LEFT JOIN " + state_name + " " +
+                        "ON (KMZ.report=" + state_name + ".report)";
+
+                    cmd_sql = new SQLiteCommand(sql, con);
+                    cmd_sql.ExecuteNonQuery();
+                }
+            }
+
+            label_UpdateKMZDB.Text = "Upload complete!";
+            label_UpdateKMZDB.ForeColor = Color.Green;
+
+
+
+        }
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            label_UpdateDB.Text = "";
-            label_UpdateDB.ForeColor = Color.Black;
+            label_UpdateRecordDB.Text = "";
+            label_UpdateRecordDB.ForeColor = Color.Black;
+            label_UpdateKMZDB.Text = "";
+            label_UpdateKMZDB.ForeColor = Color.Black;
 
             label_ExcelPathMessage.Text = "";
             label_ExcelPathMessage.ForeColor = Color.Black;
@@ -687,5 +915,7 @@ namespace dslsa
             listView_ProjName.SelectedItems.Clear();
             listView_City.SelectedItems.Clear();
         }
+
+
     }
 }
