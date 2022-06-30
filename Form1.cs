@@ -22,23 +22,42 @@ namespace dslsa
         private List<ListViewItem> masterlist_pn;
         private List<ListViewItem> masterlist_projname;
         private List<ListViewItem> masterlist_city;
-        private String masteruser = "";
-        private String masterpass = "";
-        public List<string> report_nums = new List<string>();
-        private String dbpath = @"dslsa_database.db";
+        private string masteruser = "";
+        private string masterpass = "";
+        private string dbpath = @"dslsa_database.db";
         private SQLiteConnection con;
 
+        internal List<string> report_nums = new List<string>();
+        private IDictionary<string, List<string>> pointDict = new Dictionary<string, List<string>>();
+        internal int mouse_x;
+        internal int mouse_y;
+        private List<GMapMarker> marker_list = new List<GMapMarker>();
+
+        internal string map_report;
+        internal List<string> map_report_list = new List<string>();
+        internal string map_projnum;
+        internal string map_projname;
+        internal string map_client;
+
+        private IDictionary<string, List<double>> state_centerpoint_dict = new Dictionary<string, List<double>>();
 
 
-        public double ConvertVal { get; private set; }
+
 
         //LOAD OPTIONS METHODS.....................................................................
         private void FormMain_Load(object sender, EventArgs e)
         {
+
+            state_centerpoint_dict.Add("alaska", new List<double>(3) { 64.200841, -149.493673, 4 });
+            state_centerpoint_dict.Add("arizona", new List<double>(3) { 34.048928, -111.093731, 6.5 });
+            state_centerpoint_dict.Add("montana", new List<double>(3) { 46.879682, -110.362566, 6 });
+            state_centerpoint_dict.Add("oregon", new List<double>(3) { 43.804133, -120.554201, 6.5 });
+            state_centerpoint_dict.Add("washington", new List<double>(3) { 47.751074, -120.740138, 6.5 });
+            state_centerpoint_dict.Add("wyoming", new List<double>(3) { 43.075968, -107.290284, 6.5 });
             textBox_Results.BackColor = Color.White;
 
             //load options for states from database
-            String sql;
+            string sql;
             List<string> state_tables = new List<string>();
             con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
             con.Open();
@@ -51,17 +70,18 @@ namespace dslsa
                 {
                     while (rdr.Read())
                     {
-                        state_tables.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Convert.ToString(rdr["name"]).ToLower()));
-
+                        string state = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Convert.ToString(rdr["name"]).ToLower());
+                        if (!state.ToLower().Contains("kmz") && state.ToLower() != "folderpaths")
+                        {
+                            state_tables.Add(state);
+                        }
                     }
                 }
             }
-            state_tables.Remove("Folderpaths");
             state_tables.Sort();
-            foreach (String tab in state_tables)
+            foreach (string tab in state_tables)
             {
                 comboBox_State.Items.Add(tab);
-
             }
 
             //set last update datetime for databases
@@ -90,6 +110,11 @@ namespace dslsa
         private void comboBoxState_SelectedValueChanged(object sender, EventArgs e)
         {
             //clear current items
+            gmap.Overlays.Clear();
+            marker_list.Clear();
+            map_report_list.Clear();
+            listView_MapReports.Items.Clear();
+
             listView_PN.Items.Clear();
             listView_ProjName.Items.Clear();
             listView_County.Items.Clear();
@@ -97,6 +122,13 @@ namespace dslsa
 
             //read data from sqlite db to dictionary
             string state = comboBox_State.SelectedItem.ToString();
+            try
+            {
+                gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+            }
+            catch (Exception ex) { }
+
             Dictionary<string, List<string>> dict_cols = new Dictionary<string, List<string>>();
             dict_cols.Add("projectnumber", new List<string>());
             dict_cols.Add("projectname", new List<string>());
@@ -158,6 +190,11 @@ namespace dslsa
                 masterlist_city.Add(lvi);
             }
             listView_City.EndUpdate();
+
+            textBox_PN.Text = "";
+            textBox_ProjName.Text = "";
+            textBox_County.Text = "";
+            textBox_City.Text = "";
         }
 
 
@@ -192,78 +229,77 @@ namespace dslsa
 
         }
 
+
+
+
         //MAP METHODS.....................................................................
         private void listView_PN_Click(object sender, EventArgs e)
         {
+            gmap.Overlays.Clear();
+            marker_list.Clear();
+            string state = comboBox_State.SelectedItem.ToString();
 
-        }
+            //build the where clause based on all selections
+            List<string> query_whereclause = new List<string>();
+            string selectedPN = listView_PN.SelectedItems[0].Text.ToString();
+            string selectedProjName;
+            string selectedCity;
 
-        private void listView_City_Click(object sender, EventArgs e)
-        {
-            //get kmz folder from db
+            try
+            {
+                selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectname='" + selectedProjName + "'");
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedCity = listView_City.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("city='" + selectedPN + "'");
+            }
+            catch (Exception) { }
+
+
+            string query_wherestring = string.Join(" OR ", query_whereclause.ToArray());
+            if (query_wherestring == "")
+            {
+                query_wherestring += "projectnumber='" + selectedPN + "'";
+            }
+            else
+            {
+                query_wherestring += "OR projectnumber='" + selectedPN + "'";
+            }
+
             //setup database connection
-            SQLiteCommand cmd_sql;
             SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
             con.Open();
-            string sql = string.Empty;
-            string fname = string.Empty;
-            string filename;
+            string sql;
 
+            pointDict.Clear();
+            pointDict.Add("report", new List<string>());
+            pointDict.Add("projectnumber", new List<string>());
+            pointDict.Add("projectname", new List<string>());
+            pointDict.Add("client", new List<string>());
+            pointDict.Add("lat", new List<string>());
+            pointDict.Add("lon", new List<string>());
 
-            //get kmz path
-            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
+            //get all tables in database
+            sql = @"SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
                 {
                     while (rdr.Read())
                     {
-                        fname = Convert.ToString(rdr["value"]);
+                        pointDict["report"].Add(Convert.ToString(rdr["report"]));
+                        pointDict["projectnumber"].Add(Convert.ToString(rdr["projectnumber"]));
+                        pointDict["projectname"].Add(Convert.ToString(rdr["projectname"]));
+                        pointDict["client"].Add(Convert.ToString(rdr["client"]));
+                        pointDict["lat"].Add(Convert.ToString(rdr["lat"]));
+                        pointDict["lon"].Add(Convert.ToString(rdr["lon"]));
                     }
                 }
             }
-
-            //unzip kmz
-            var file = File.OpenRead(fname + @"\Bethel.kmz");
-            var zip = new ZipArchive(file, ZipArchiveMode.Read);
-            XNamespace ns = "http://www.opengis.net/kml/2.2";
-            IDictionary<string, List<string>> pointDict = new Dictionary<string, List<string>>();
-
-            pointDict.Add("lat", new List<string>());
-            pointDict.Add("lon", new List<string>());
-            pointDict.Add("projectname", new List<string>());
-            pointDict.Add("file", new List<string>());
-
-            var stream = zip.GetEntry("doc.kml").Open();
-            XDocument xDoc = XDocument.Load(stream);
-            if (xDoc != null)
-            {
-                var placemarks = xDoc.Root.Element(ns + "Document").Element(ns + "Folder").Elements(ns + "Placemark");
-                foreach (var place in placemarks)
-                {
-                    var coords = place.Element(ns + "Point").Element(ns + "coordinates").Value;
-                    coords = coords.Substring(0, coords.LastIndexOf(','));
-                    pointDict["lon"].Add(coords.Substring(0, coords.IndexOf(',')));
-                    pointDict["lat"].Add(coords.Substring(coords.IndexOf(',') + 1));
-
-                    var desc = place.Element(ns + "description").Value;
-
-                    // get project name
-                    var searchstring = "<td>Project</td>";
-                    var startindex = desc.IndexOf(searchstring) + searchstring.Length;
-                    var endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
-                    var pname = desc.Substring(startindex, endindex - startindex);
-                    pointDict["projectname"].Add(pname.Substring(6, pname.Length - 13));
-
-                    //get file number
-                    searchstring = "<td>File</td>";
-                    startindex = desc.IndexOf(searchstring) + searchstring.Length;
-                    endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
-                    filename = desc.Substring(startindex, endindex - startindex);
-                    pointDict["file"].Add(filename.Substring(6, filename.Length - 13));
-
-                }
-            }
-
 
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
@@ -274,15 +310,173 @@ namespace dslsa
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
                         GMarkerGoogleType.blue_pushpin);
                 markers.Markers.Add(marker);
-                marker.ToolTipText = "\n" + "Project Name: " + pointDict["projectname"].ElementAt(i) + "\n" + "Report Number: " + pointDict["file"].ElementAt(i);
-                //marker.ToolTip.Fill = Brushes.Black;
-                //marker.ToolTip.Foreground = Brushes.White;
-                //marker.ToolTip.Stroke = Pens.Black;
-                marker.ToolTip.TextPadding = new Size(20, 20);
+                marker_list.Add(marker);
+            }
+            gmap.Overlays.Add(markers);
+            gmap.ZoomAndCenterMarkers("markers");
+        }
 
+        private void listView_ProjName_Click(object sender, EventArgs e)
+        {
+            gmap.Overlays.Clear();
+            marker_list.Clear();
+            string state = comboBox_State.SelectedItem.ToString();
+
+            //build the where clause based on all selections
+            List<string> query_whereclause = new List<string>();
+            string selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
+            string selectedPN;
+            string selectedCity;
+
+            try
+            {
+                selectedPN = listView_PN.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectnumber='" + selectedPN + "'");
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedCity = listView_City.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("city='" + selectedCity + "'");
+            }
+            catch (Exception) { }
+            string query_wherestring = string.Join(" OR ", query_whereclause.ToArray());
+            if (query_wherestring == "")
+            {
+                query_wherestring += "projectname='" + selectedProjName + "'";
+            }
+            else
+            {
+                query_wherestring += "OR projectname='" + selectedProjName + "'";
             }
 
+            //setup database connection
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql;
+
+            pointDict.Clear();
+            pointDict.Add("report", new List<string>());
+            pointDict.Add("projectnumber", new List<string>());
+            pointDict.Add("projectname", new List<string>());
+            pointDict.Add("client", new List<string>());
+            pointDict.Add("lat", new List<string>());
+            pointDict.Add("lon", new List<string>());
+
+            //get all tables in database
+            sql = @"SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        pointDict["report"].Add(Convert.ToString(rdr["report"]));
+                        pointDict["projectnumber"].Add(Convert.ToString(rdr["projectnumber"]));
+                        pointDict["projectname"].Add(Convert.ToString(rdr["projectname"]));
+                        pointDict["client"].Add(Convert.ToString(rdr["client"]));
+                        pointDict["lat"].Add(Convert.ToString(rdr["lat"]));
+                        pointDict["lon"].Add(Convert.ToString(rdr["lon"]));
+                    }
+                }
+            }
+
+            // add markers
+            GMapOverlay markers = new GMapOverlay("markers");
+            for (int i = 0; i < pointDict["lat"].Count(); i++)
+            {
+                GMapMarker marker =
+                    new GMarkerGoogle(
+                        new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
+                        GMarkerGoogleType.blue_pushpin);
+                markers.Markers.Add(marker);
+                marker_list.Add(marker);
+            }
             gmap.Overlays.Add(markers);
+            gmap.ZoomAndCenterMarkers("markers");
+        }
+
+        private void listView_City_Click(object sender, EventArgs e)
+        {
+            gmap.Overlays.Clear();
+            marker_list.Clear();
+            string state = comboBox_State.SelectedItem.ToString();
+
+            //build the where clause based on all selections
+            List<string> query_whereclause = new List<string>();
+            string selectedCity = listView_City.SelectedItems[0].Text.ToString();
+            string selectedPN;
+            string selectedProjName;
+
+            try
+            {
+                selectedPN = listView_PN.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectnumber='" + selectedPN + "'");
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectname='" + selectedProjName + "'");
+            }
+            catch (Exception) { }
+            string query_wherestring = string.Join(" OR ", query_whereclause.ToArray());
+            if (query_wherestring == "")
+            {
+                query_wherestring += "city='" + selectedCity + "'";
+            }
+            else
+            {
+                query_wherestring += "OR city='" + selectedCity + "'";
+            }
+
+            //setup database connection
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql;
+
+            pointDict.Clear();
+            pointDict.Add("report", new List<string>());
+            pointDict.Add("projectnumber", new List<string>());
+            pointDict.Add("projectname", new List<string>());
+            pointDict.Add("client", new List<string>());
+            pointDict.Add("lat", new List<string>());
+            pointDict.Add("lon", new List<string>());
+
+            //get all tables in database
+            sql = @"SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        pointDict["report"].Add(Convert.ToString(rdr["report"]));
+                        pointDict["projectnumber"].Add(Convert.ToString(rdr["projectnumber"]));
+                        pointDict["projectname"].Add(Convert.ToString(rdr["projectname"]));
+                        pointDict["client"].Add(Convert.ToString(rdr["client"]));
+                        pointDict["lat"].Add(Convert.ToString(rdr["lat"]));
+                        pointDict["lon"].Add(Convert.ToString(rdr["lon"]));
+                    }
+                }
+            }
+
+            // add markers
+            GMapOverlay markers = new GMapOverlay("markers");
+            for (int i = 0; i < pointDict["lat"].Count(); i++)
+            {
+
+                GMapMarker marker =
+                    new GMarkerGoogle(
+                        new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
+                        GMarkerGoogleType.blue_pushpin);
+                markers.Markers.Add(marker);
+                marker_list.Add(marker);
+            }
+            gmap.Overlays.Add(markers);
+            gmap.ZoomAndCenterMarkers("markers");
         }
 
         private void gmap_Load(object sender, EventArgs e)
@@ -292,12 +486,28 @@ namespace dslsa
             GMaps.Instance.Mode = AccessMode.ServerOnly;
             gmap.Position = new PointLatLng(64.200841, -149.493673);
             gmap.ShowCenter = false;
+            gmap.DisableFocusOnMouseEnter = true;
 
         }
 
         private void gmap_OnMarkerClick(GMapMarker item, MouseEventArgs e)
         {
-            //Console.WriteLine(String.Format("Marker {0} was clicked.", item.Tag));
+            //if form is open, close it
+            if (Application.OpenForms.OfType<Form_MapPopup>().Any())
+            {
+                Application.OpenForms.OfType<Form_MapPopup>().First().Close();
+            }
+            mouse_x = MousePosition.X;
+            mouse_y = MousePosition.Y;
+
+            int markerindex = marker_list.IndexOf(item);
+            map_report = pointDict["report"][markerindex];
+            map_projnum = pointDict["projectnumber"][markerindex];
+            map_projname = pointDict["projectname"][markerindex];
+            map_client = pointDict["client"][markerindex];
+
+            Form_MapPopup s = new Form_MapPopup();
+            s.Show();
         }
 
 
@@ -635,6 +845,34 @@ namespace dslsa
                 label_UpdateRecordDB.ForeColor = Color.Red;
             }
 
+            //load options for states from database
+            List<string> state_tables = new List<string>();
+            comboBox_State.Items.Clear();
+            //get all tables in database
+            sql = @"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        string state = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Convert.ToString(rdr["name"]).ToLower());
+                        if (!state.ToLower().Contains("kmz") && state.ToLower() != "folderpaths")
+                        {
+                            state_tables.Add(state);
+                        }
+                    }
+                }
+            }
+            state_tables.Sort();
+            foreach (string tab in state_tables)
+            {
+                comboBox_State.Items.Add(tab);
+            }
+            comboBox_State.SelectedItem = "Alaska";
+            comboBoxState_SelectedValueChanged(sender, e);
+
+
             con.Close();
 
 
@@ -797,6 +1035,7 @@ namespace dslsa
 
 
         }
+
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             label_UpdateRecordDB.Text = "";
@@ -909,13 +1148,59 @@ namespace dslsa
             s.Show();
         }
 
-        private void button_Deselect_Click(object sender, EventArgs e)
+        private void button_Reset_Click(object sender, EventArgs e)
         {
             listView_PN.SelectedItems.Clear();
             listView_ProjName.SelectedItems.Clear();
             listView_City.SelectedItems.Clear();
+
+            gmap.Overlays.Clear();
+            map_report_list.Clear();
+            listView_MapReports.Items.Clear();
+            string state = comboBox_State.SelectedItem.ToString();
+            try
+            {
+                gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+            }
+            catch (Exception ex) { }
+
+            textBox_PN.Text = "";
+            textBox_ProjName.Text = "";
+            textBox_County.Text = "";
+            textBox_City.Text = "";
         }
 
+        private void listView_MapReports_DoubleClick(object sender, EventArgs e)
+        {
+            string selectedreport = listView_MapReports.SelectedItems[0].Text.ToString();
+            map_report_list.Remove(selectedreport);
+            listView_MapReports.Items.Clear();
+            map_report_list.Sort();
+            foreach (string r in map_report_list)
+            {
+                ListViewItem lvi = new ListViewItem(r);
+                listView_MapReports.Items.Add(lvi);
+            }
 
+        }
+
+        private void button_SearchMapPDFs_Click(object sender, EventArgs e)
+        {
+            textBox_Results.Text = "";
+            textBox_Results.ForeColor = Color.Black;
+
+            report_nums = map_report_list;
+            //open the search results form
+            this.Hide();
+            Form2 s = new Form2();
+            s.Show();
+        }
+
+        private void button_ClearMapList_Click(object sender, EventArgs e)
+        {
+            map_report_list.Clear();
+            listView_MapReports.Items.Clear();
+        }
     }
 }

@@ -44,3 +44,4 @@ C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\Office.dl
 C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\NetOffice.dll
 C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\OfficeApi.dll
 C:\Users\klump\OneDrive\Programming\dslsa\bin\x86\Debug\net6.0-windows\VBIDEApi.dll
+C:\Users\klump\OneDrive\Programming\dslsa\obj\x86\Debug\net6.0-windows\dslsa.Form_MapPopup.resources

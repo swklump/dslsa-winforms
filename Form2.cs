@@ -15,8 +15,8 @@ namespace dslsa
         public Form f = Application.OpenForms["Form1"];
         public List<string> report_nums = new List<string>();
         private FolderBrowserDialog folderBrowserDialog1;
-        private String pdffolder;
-        private String dbpath = @"dslsa_database.db";
+        private string pdffolder;
+        private string dbpath = @"dslsa_database.db";
 
         //NAVIGATION METHODS............................................................
         private void button_MainMenu_Click(object sender, EventArgs e)
@@ -166,20 +166,20 @@ namespace dslsa
 
                 //zip files
                 try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
-                catch (UnauthorizedAccessException)
+                catch (Exception ex)
                 {
                     Directory.Delete(folderName + @"\SoilReportPDFs", true);
-                    textBox_SearchResults.Text = "Cannot save files in that folder. Please select a different folder.";
+                    textBox_SearchResults.Text = "Cannot save files in that folder. Please select a different folder. You either do not have access or there is already a folder called 'SoilsReportPDFs.zip' in that directory.";
                     textBox_SearchResults.ForeColor = Color.Red;
                     return;
                 }
-                try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
-                catch (IOException)
-                {
-                    textBox_SearchResults.Text = "A folder called 'SoilsReportPDFs' already exists in the directory specified. Please delete the existing folder or select a different directory.";
-                    textBox_SearchResults.ForeColor = Color.Red;
-                    return;
-                }
+                //try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
+                //catch (IOException)
+                //{
+                //    textBox_SearchResults.Text = "A folder called 'SoilsReportPDFs' already exists in the directory specified. Please delete the existing folder or select a different directory.";
+                //    textBox_SearchResults.ForeColor = Color.Red;
+                //    return;
+                //}
 
                 textBox_SearchResults.Text = "PDF saved in specified folder!";
                 textBox_SearchResults.ForeColor = Color.Green;

@@ -40,7 +40,7 @@
             // label_WhatToDo
             // 
             this.label_WhatToDo.AutoSize = true;
-            this.label_WhatToDo.Location = new System.Drawing.Point(26, 83);
+            this.label_WhatToDo.Location = new System.Drawing.Point(26, 109);
             this.label_WhatToDo.Name = "label_WhatToDo";
             this.label_WhatToDo.Size = new System.Drawing.Size(226, 15);
             this.label_WhatToDo.TabIndex = 1;
@@ -48,7 +48,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(274, 8);
+            this.button2.Location = new System.Drawing.Point(320, 8);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(140, 23);
             this.button2.TabIndex = 4;
@@ -58,7 +58,7 @@
             // 
             // button_OpenPDFs
             // 
-            this.button_OpenPDFs.Location = new System.Drawing.Point(26, 115);
+            this.button_OpenPDFs.Location = new System.Drawing.Point(26, 141);
             this.button_OpenPDFs.Name = "button_OpenPDFs";
             this.button_OpenPDFs.Size = new System.Drawing.Size(111, 23);
             this.button_OpenPDFs.TabIndex = 3;
@@ -68,7 +68,7 @@
             // 
             // button_SavePDFs
             // 
-            this.button_SavePDFs.Location = new System.Drawing.Point(165, 115);
+            this.button_SavePDFs.Location = new System.Drawing.Point(186, 141);
             this.button_SavePDFs.Name = "button_SavePDFs";
             this.button_SavePDFs.Size = new System.Drawing.Size(111, 23);
             this.button_SavePDFs.TabIndex = 3;
@@ -78,7 +78,7 @@
             // 
             // button_EmailPDFs
             // 
-            this.button_EmailPDFs.Location = new System.Drawing.Point(303, 115);
+            this.button_EmailPDFs.Location = new System.Drawing.Point(349, 141);
             this.button_EmailPDFs.Name = "button_EmailPDFs";
             this.button_EmailPDFs.Size = new System.Drawing.Size(111, 23);
             this.button_EmailPDFs.TabIndex = 3;
@@ -94,7 +94,7 @@
             this.textBox_SearchResults.Name = "textBox_SearchResults";
             this.textBox_SearchResults.ReadOnly = true;
             this.textBox_SearchResults.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_SearchResults.Size = new System.Drawing.Size(226, 57);
+            this.textBox_SearchResults.Size = new System.Drawing.Size(271, 83);
             this.textBox_SearchResults.TabIndex = 5;
             // 
             // Form2
@@ -102,7 +102,7 @@
             this.AcceptButton = this.button_OpenPDFs;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(432, 157);
+            this.ClientSize = new System.Drawing.Size(472, 180);
             this.Controls.Add(this.textBox_SearchResults);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button_EmailPDFs);

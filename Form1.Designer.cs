@@ -31,7 +31,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.button_Deselect = new System.Windows.Forms.Button();
+            this.button_ClearMapList = new System.Windows.Forms.Button();
+            this.button_SearchMapPDFs = new System.Windows.Forms.Button();
+            this.label17 = new System.Windows.Forms.Label();
+            this.listView_MapReports = new System.Windows.Forms.ListView();
+            this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+            this.button_Reset = new System.Windows.Forms.Button();
             this.textBox_Results = new System.Windows.Forms.TextBox();
             this.gmap = new GMap.NET.WindowsForms.GMapControl();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -107,13 +112,17 @@
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1160, 587);
+            this.tabControl1.Size = new System.Drawing.Size(1245, 723);
             this.tabControl1.TabIndex = 0;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.button_Deselect);
+            this.tabPage1.Controls.Add(this.button_ClearMapList);
+            this.tabPage1.Controls.Add(this.button_SearchMapPDFs);
+            this.tabPage1.Controls.Add(this.label17);
+            this.tabPage1.Controls.Add(this.listView_MapReports);
+            this.tabPage1.Controls.Add(this.button_Reset);
             this.tabPage1.Controls.Add(this.textBox_Results);
             this.tabPage1.Controls.Add(this.gmap);
             this.tabPage1.Controls.Add(this.tableLayoutPanel2);
@@ -124,30 +133,78 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1152, 559);
+            this.tabPage1.Size = new System.Drawing.Size(1237, 695);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Main Application";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // button_Deselect
+            // button_ClearMapList
             // 
-            this.button_Deselect.Location = new System.Drawing.Point(311, 9);
-            this.button_Deselect.Name = "button_Deselect";
-            this.button_Deselect.Size = new System.Drawing.Size(105, 23);
-            this.button_Deselect.TabIndex = 8;
-            this.button_Deselect.Text = "Deselect All";
-            this.button_Deselect.UseVisualStyleBackColor = true;
-            this.button_Deselect.Click += new System.EventHandler(this.button_Deselect_Click);
+            this.button_ClearMapList.Location = new System.Drawing.Point(1115, 664);
+            this.button_ClearMapList.Name = "button_ClearMapList";
+            this.button_ClearMapList.Size = new System.Drawing.Size(116, 23);
+            this.button_ClearMapList.TabIndex = 11;
+            this.button_ClearMapList.Text = "Clear List";
+            this.button_ClearMapList.UseVisualStyleBackColor = true;
+            this.button_ClearMapList.Click += new System.EventHandler(this.button_ClearMapList_Click);
+            // 
+            // button_SearchMapPDFs
+            // 
+            this.button_SearchMapPDFs.Location = new System.Drawing.Point(986, 664);
+            this.button_SearchMapPDFs.Name = "button_SearchMapPDFs";
+            this.button_SearchMapPDFs.Size = new System.Drawing.Size(123, 23);
+            this.button_SearchMapPDFs.TabIndex = 11;
+            this.button_SearchMapPDFs.Text = "Search Map PDFs";
+            this.button_SearchMapPDFs.UseVisualStyleBackColor = true;
+            this.button_SearchMapPDFs.Click += new System.EventHandler(this.button_SearchMapPDFs_Click);
+            // 
+            // label17
+            // 
+            this.label17.BackColor = System.Drawing.Color.Transparent;
+            this.label17.Location = new System.Drawing.Point(986, 638);
+            this.label17.Name = "label17";
+            this.label17.Padding = new System.Windows.Forms.Padding(2, 2, 0, 0);
+            this.label17.Size = new System.Drawing.Size(245, 52);
+            this.label17.TabIndex = 10;
+            this.label17.Text = "Double-click item to remove from list.";
+            // 
+            // listView_MapReports
+            // 
+            this.listView_MapReports.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader5});
+            this.listView_MapReports.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listView_MapReports.Location = new System.Drawing.Point(986, 494);
+            this.listView_MapReports.Name = "listView_MapReports";
+            this.listView_MapReports.Size = new System.Drawing.Size(245, 141);
+            this.listView_MapReports.TabIndex = 9;
+            this.listView_MapReports.UseCompatibleStateImageBehavior = false;
+            this.listView_MapReports.View = System.Windows.Forms.View.Details;
+            this.listView_MapReports.DoubleClick += new System.EventHandler(this.listView_MapReports_DoubleClick);
+            // 
+            // columnHeader5
+            // 
+            this.columnHeader5.Text = "Reports Added from Map:";
+            this.columnHeader5.Width = 235;
+            // 
+            // button_Reset
+            // 
+            this.button_Reset.Location = new System.Drawing.Point(311, 9);
+            this.button_Reset.Name = "button_Reset";
+            this.button_Reset.Size = new System.Drawing.Size(105, 23);
+            this.button_Reset.TabIndex = 8;
+            this.button_Reset.Text = "Reset All";
+            this.button_Reset.UseVisualStyleBackColor = true;
+            this.button_Reset.Click += new System.EventHandler(this.button_Reset_Click);
             // 
             // textBox_Results
             // 
             this.textBox_Results.BackColor = System.Drawing.SystemColors.Control;
-            this.textBox_Results.Location = new System.Drawing.Point(609, 7);
+            this.textBox_Results.Location = new System.Drawing.Point(592, 7);
             this.textBox_Results.Multiline = true;
             this.textBox_Results.Name = "textBox_Results";
             this.textBox_Results.ReadOnly = true;
             this.textBox_Results.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_Results.Size = new System.Drawing.Size(537, 44);
+            this.textBox_Results.Size = new System.Drawing.Size(639, 44);
             this.textBox_Results.TabIndex = 7;
             // 
             // gmap
@@ -158,7 +215,7 @@
             this.gmap.GrayScaleMode = false;
             this.gmap.HelperLineOption = GMap.NET.WindowsForms.HelperLineOptions.DontShow;
             this.gmap.LevelsKeepInMemory = 5;
-            this.gmap.Location = new System.Drawing.Point(609, 57);
+            this.gmap.Location = new System.Drawing.Point(592, 57);
             this.gmap.MarkersEnabled = true;
             this.gmap.MaxZoom = 18;
             this.gmap.MinZoom = 2;
@@ -169,12 +226,13 @@
             this.gmap.PolygonsEnabled = true;
             this.gmap.RetryLoadTile = 0;
             this.gmap.RoutesEnabled = true;
-            this.gmap.ScaleMode = GMap.NET.WindowsForms.ScaleModes.Integer;
+            this.gmap.ScaleMode = GMap.NET.WindowsForms.ScaleModes.Fractional;
             this.gmap.SelectedAreaFillColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(65)))), ((int)(((byte)(105)))), ((int)(((byte)(225)))));
             this.gmap.ShowTileGridLines = false;
-            this.gmap.Size = new System.Drawing.Size(537, 496);
+            this.gmap.Size = new System.Drawing.Size(639, 632);
             this.gmap.TabIndex = 5;
             this.gmap.Zoom = 4D;
+            this.gmap.OnMarkerClick += new GMap.NET.WindowsForms.MarkerClick(this.gmap_OnMarkerClick);
             this.gmap.Load += new System.EventHandler(this.gmap_Load);
             // 
             // tableLayoutPanel2
@@ -188,13 +246,13 @@
             this.tableLayoutPanel2.Controls.Add(this.textBox_City, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.listView_County, 0, 2);
             this.tableLayoutPanel2.Controls.Add(this.listView_City, 1, 2);
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(6, 311);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(6, 373);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 3;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 200F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(580, 242);
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 278F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(580, 322);
             this.tableLayoutPanel2.TabIndex = 4;
             // 
             // label4
@@ -202,9 +260,9 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(3, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(109, 15);
+            this.label4.Size = new System.Drawing.Size(160, 15);
             this.label4.TabIndex = 0;
-            this.label4.Text = "Search for county...";
+            this.label4.Text = "Search for county/borough...";
             // 
             // label5
             // 
@@ -235,9 +293,10 @@
             // 
             this.listView_County.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3});
-            this.listView_County.Location = new System.Drawing.Point(3, 45);
+            this.listView_County.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listView_County.Location = new System.Drawing.Point(3, 47);
             this.listView_County.Name = "listView_County";
-            this.listView_County.Size = new System.Drawing.Size(280, 192);
+            this.listView_County.Size = new System.Drawing.Size(280, 267);
             this.listView_County.TabIndex = 9;
             this.listView_County.UseCompatibleStateImageBehavior = false;
             this.listView_County.View = System.Windows.Forms.View.Details;
@@ -251,9 +310,10 @@
             // 
             this.listView_City.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader4});
-            this.listView_City.Location = new System.Drawing.Point(293, 45);
+            this.listView_City.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listView_City.Location = new System.Drawing.Point(293, 47);
             this.listView_City.Name = "listView_City";
-            this.listView_City.Size = new System.Drawing.Size(280, 192);
+            this.listView_City.Size = new System.Drawing.Size(280, 270);
             this.listView_City.TabIndex = 10;
             this.listView_City.UseCompatibleStateImageBehavior = false;
             this.listView_City.View = System.Windows.Forms.View.Details;
@@ -280,8 +340,8 @@
             this.tableLayoutPanel1.RowCount = 3;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 205F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(580, 248);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 267F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(580, 310);
             this.tableLayoutPanel1.TabIndex = 4;
             // 
             // label2
@@ -322,13 +382,15 @@
             // 
             this.listView_PN.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
+            this.listView_PN.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listView_PN.Location = new System.Drawing.Point(3, 46);
             this.listView_PN.MultiSelect = false;
             this.listView_PN.Name = "listView_PN";
-            this.listView_PN.Size = new System.Drawing.Size(280, 199);
+            this.listView_PN.Size = new System.Drawing.Size(280, 261);
             this.listView_PN.TabIndex = 7;
             this.listView_PN.UseCompatibleStateImageBehavior = false;
             this.listView_PN.View = System.Windows.Forms.View.Details;
+            this.listView_PN.Click += new System.EventHandler(this.listView_PN_Click);
             // 
             // columnHeader1
             // 
@@ -339,12 +401,14 @@
             // 
             this.listView_ProjName.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader2});
+            this.listView_ProjName.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listView_ProjName.Location = new System.Drawing.Point(293, 46);
             this.listView_ProjName.Name = "listView_ProjName";
-            this.listView_ProjName.Size = new System.Drawing.Size(283, 199);
+            this.listView_ProjName.Size = new System.Drawing.Size(283, 261);
             this.listView_ProjName.TabIndex = 8;
             this.listView_ProjName.UseCompatibleStateImageBehavior = false;
             this.listView_ProjName.View = System.Windows.Forms.View.Details;
+            this.listView_ProjName.Click += new System.EventHandler(this.listView_ProjName_Click);
             // 
             // columnHeader2
             // 
@@ -353,7 +417,7 @@
             // 
             // button_SearchPDFs
             // 
-            this.button_SearchPDFs.Location = new System.Drawing.Point(454, 10);
+            this.button_SearchPDFs.Location = new System.Drawing.Point(447, 10);
             this.button_SearchPDFs.Name = "button_SearchPDFs";
             this.button_SearchPDFs.Size = new System.Drawing.Size(132, 23);
             this.button_SearchPDFs.TabIndex = 6;
@@ -393,7 +457,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1152, 559);
+            this.tabPage2.Size = new System.Drawing.Size(1237, 695);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Admin";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -412,7 +476,7 @@
             this.tabControl_Login.Location = new System.Drawing.Point(234, 3);
             this.tabControl_Login.Name = "tabControl_Login";
             this.tabControl_Login.SelectedIndex = 0;
-            this.tabControl_Login.Size = new System.Drawing.Size(912, 550);
+            this.tabControl_Login.Size = new System.Drawing.Size(1000, 686);
             this.tabControl_Login.TabIndex = 6;
             this.tabControl_Login.Visible = false;
             // 
@@ -427,7 +491,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(904, 522);
+            this.tabPage3.Size = new System.Drawing.Size(992, 658);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Database Update";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -507,14 +571,14 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(904, 522);
+            this.tabPage4.Size = new System.Drawing.Size(992, 658);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "Folder Paths";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // button_UpdatePDFPath
             // 
-            this.button_UpdatePDFPath.Location = new System.Drawing.Point(822, 188);
+            this.button_UpdatePDFPath.Location = new System.Drawing.Point(911, 187);
             this.button_UpdatePDFPath.Name = "button_UpdatePDFPath";
             this.button_UpdatePDFPath.Size = new System.Drawing.Size(75, 23);
             this.button_UpdatePDFPath.TabIndex = 4;
@@ -524,7 +588,7 @@
             // 
             // button_UpdateKMZPath
             // 
-            this.button_UpdateKMZPath.Location = new System.Drawing.Point(822, 113);
+            this.button_UpdateKMZPath.Location = new System.Drawing.Point(911, 112);
             this.button_UpdateKMZPath.Name = "button_UpdateKMZPath";
             this.button_UpdateKMZPath.Size = new System.Drawing.Size(75, 23);
             this.button_UpdateKMZPath.TabIndex = 4;
@@ -534,7 +598,7 @@
             // 
             // button_UpdateExcelPath
             // 
-            this.button_UpdateExcelPath.Location = new System.Drawing.Point(822, 39);
+            this.button_UpdateExcelPath.Location = new System.Drawing.Point(911, 38);
             this.button_UpdateExcelPath.Name = "button_UpdateExcelPath";
             this.button_UpdateExcelPath.Size = new System.Drawing.Size(75, 23);
             this.button_UpdateExcelPath.TabIndex = 4;
@@ -546,21 +610,21 @@
             // 
             this.textBox_NewPDFPath.Location = new System.Drawing.Point(523, 188);
             this.textBox_NewPDFPath.Name = "textBox_NewPDFPath";
-            this.textBox_NewPDFPath.Size = new System.Drawing.Size(287, 23);
+            this.textBox_NewPDFPath.Size = new System.Drawing.Size(382, 23);
             this.textBox_NewPDFPath.TabIndex = 3;
             // 
             // textBox_NewKMZPath
             // 
             this.textBox_NewKMZPath.Location = new System.Drawing.Point(523, 113);
             this.textBox_NewKMZPath.Name = "textBox_NewKMZPath";
-            this.textBox_NewKMZPath.Size = new System.Drawing.Size(287, 23);
+            this.textBox_NewKMZPath.Size = new System.Drawing.Size(382, 23);
             this.textBox_NewKMZPath.TabIndex = 3;
             // 
             // textBox_NewExcelPath
             // 
             this.textBox_NewExcelPath.Location = new System.Drawing.Point(523, 39);
             this.textBox_NewExcelPath.Name = "textBox_NewExcelPath";
-            this.textBox_NewExcelPath.Size = new System.Drawing.Size(175, 23);
+            this.textBox_NewExcelPath.Size = new System.Drawing.Size(270, 23);
             this.textBox_NewExcelPath.TabIndex = 3;
             // 
             // label_CurrentPDFPath
@@ -647,7 +711,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(704, 42);
+            this.label14.Location = new System.Drawing.Point(799, 42);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(106, 15);
             this.label14.TabIndex = 0;
@@ -719,13 +783,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1184, 611);
+            this.ClientSize = new System.Drawing.Size(1262, 747);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(1200, 650);
-            this.MinimumSize = new System.Drawing.Size(1200, 650);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "DOWL Soils Library Search App";
@@ -807,9 +869,14 @@
         private Label label_PDFPathMessage;
         private Label label15;
         internal TextBox textBox_Results;
-        private Button button_Deselect;
+        private Button button_Reset;
         private Button button_UpdateKMZDB;
         private Label label16;
         private Label label_UpdateKMZDB;
+        private ColumnHeader columnHeader5;
+        internal ListView listView_MapReports;
+        private Button button_SearchMapPDFs;
+        private Label label17;
+        private Button button_ClearMapList;
     }
 }
