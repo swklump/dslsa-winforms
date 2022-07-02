@@ -1,5 +1,6 @@
 ﻿using System.Data.SQLite;
 using System.Diagnostics;
+using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace dslsa
 {
@@ -105,6 +106,29 @@ namespace dslsa
                 ((Form1)f).listView_MapReports.Items.Add(lvi);
             }
 
+        }
+
+        private void button_EmailPDF_Click(object sender, EventArgs e)
+        {
+            //create outlook message
+            Process.Start("OutLook.exe");
+            Outlook.Application oApp = new Outlook.Application();
+            Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
+
+            oMsg.Subject = "Soils Report PDF Attached";
+            oMsg.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
+            oMsg.HTMLBody = "Hello,<br/>";
+            oMsg.HTMLBody += "<br/>";
+            oMsg.HTMLBody += "See attached for requested soils report.<br/>";
+            oMsg.HTMLBody += "<br/>";
+            oMsg.HTMLBody += "Thanks,";
+            int pos = (int)oMsg.Body.Length + 1;
+            int attachType = (int)Outlook.OlAttachmentType.olByValue;
+            Outlook.Attachment oAttach = oMsg.Attachments.Add(pdffolder + report + ".pdf", attachType, pos, pdffolder + report + ".pdf");
+            oMsg.Display(false);
+
+            label_Message.Text = "Email draft created!";
+            label_Message.ForeColor = Color.Green;
         }
     }
 }

@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "/Sq96/YysesOMeSQhyaNv23hLS4aB3OPUTJT02OWp90g1Hcmx7eK2yXhfEq448fnKuArktWhRWhF+Q451TiOwA==",
+  "dgSpecHash": "dvs1NXyBK48Vu8xDENve7Xe4EBhgi5TfDM3N7xFmQCeauzkEesVSbEIuYfCYVilJI+Gk8JXw+A+IIsR1phhZKQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\klump\\OneDrive\\Programming\\dslsa\\dslsa.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\klump\\.nuget\\packages\\entityframework\\6.4.4\\entityframework.6.4.4.nupkg.sha512",
     "C:\\Users\\klump\\.nuget\\packages\\gmap.net.core\\2.1.6\\gmap.net.core.2.1.6.nupkg.sha512",
     "C:\\Users\\klump\\.nuget\\packages\\gmap.net.winforms\\2.1.6\\gmap.net.winforms.2.1.6.nupkg.sha512",
+    "C:\\Users\\klump\\.nuget\\packages\\googlemaps.locationservices\\1.2.0.5\\googlemaps.locationservices.1.2.0.5.nupkg.sha512",
     "C:\\Users\\klump\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\klump\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\klump\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",

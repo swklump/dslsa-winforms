@@ -7,6 +7,7 @@ using System.Data.OleDb;
 using System.Data.SQLite;
 using System.Globalization;
 using System.IO.Compression;
+using System.Net;
 using System.Xml.Linq;
 
 namespace dslsa
@@ -21,6 +22,7 @@ namespace dslsa
 
         private List<ListViewItem> masterlist_pn;
         private List<ListViewItem> masterlist_projname;
+        private List<ListViewItem> masterlist_county;
         private List<ListViewItem> masterlist_city;
         private string masteruser = "";
         private string masterpass = "";
@@ -63,7 +65,7 @@ namespace dslsa
             con.Open();
 
             //get all tables in database
-            sql = @"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
+            sql = "SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -86,7 +88,7 @@ namespace dslsa
 
             //set last update datetime for databases
             string record_datetimeupdate = String.Empty;
-            sql = @"SELECT value FROM FOLDERPATHS WHERE type ='record_update_datetime'";
+            sql = "SELECT value FROM FOLDERPATHS WHERE type ='record_update_datetime'";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -97,14 +99,24 @@ namespace dslsa
                     }
                 }
             }
+            string kmz_datetimeupdate = String.Empty;
+            sql = "SELECT value FROM FOLDERPATHS WHERE type ='kmz_update_datetime'";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        kmz_datetimeupdate = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
             label_DBUpdateTime.Text = "Database last updated on: " + record_datetimeupdate;
+            label_KMZDBUpdateTime.Text = "Database last updated on: " + kmz_datetimeupdate;
             con.Close();
 
             comboBox_State.SelectedItem = "Alaska";
-
-            gmap.DragButton = MouseButtons.Left;
-            gmap.IgnoreMarkerOnMouseWheel = true;
-
+            comboBox_QueryType.SelectedItem = "AND";
         }
 
         private void comboBoxState_SelectedValueChanged(object sender, EventArgs e)
@@ -132,12 +144,13 @@ namespace dslsa
             Dictionary<string, List<string>> dict_cols = new Dictionary<string, List<string>>();
             dict_cols.Add("projectnumber", new List<string>());
             dict_cols.Add("projectname", new List<string>());
+            dict_cols.Add("county", new List<string>());
             dict_cols.Add("city", new List<string>());
 
             con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
             con.Open();
 
-            string[] sql_items = { "projectnumber", "projectname", "city" };
+            string[] sql_items = { "projectnumber", "projectname", "county", "city" };
             List<string> sql_list = new List<string>(sql_items);
 
             foreach (KeyValuePair<string, List<string>> kvp in dict_cols)
@@ -162,6 +175,7 @@ namespace dslsa
             //Add items to listview
             masterlist_pn = new List<ListViewItem>();
             masterlist_projname = new List<ListViewItem>();
+            masterlist_county = new List<ListViewItem>();
             masterlist_city = new List<ListViewItem>();
 
             listView_PN.BeginUpdate();
@@ -181,6 +195,15 @@ namespace dslsa
                 masterlist_projname.Add(lvi);
             }
             listView_ProjName.EndUpdate();
+
+            listView_County.BeginUpdate();
+            for (int i = 0; i < dict_cols["county"].Count; i++)
+            {
+                ListViewItem lvi = new ListViewItem(dict_cols["county"][i]);
+                listView_County.Items.Add(lvi);
+                masterlist_county.Add(lvi);
+            }
+            listView_County.EndUpdate();
 
             listView_City.BeginUpdate();
             for (int i = 0; i < dict_cols["city"].Count; i++)
@@ -217,7 +240,9 @@ namespace dslsa
 
         private void textBox_County_TextChanged(object sender, EventArgs e)
         {
-            //from geocoding
+            listView_County.Items.Clear();
+            listView_County.Items.AddRange(masterlist_county.Where(lvi => lvi.Text.ToLower().Contains(textBox_County.Text.ToLower())).ToArray());
+            foreach (ListViewItem item in masterlist_county.Where(lvi => lvi.Text.ToLower().Contains(textBox_County.Text.ToLower()))) ;
 
         }
 
@@ -284,7 +309,7 @@ namespace dslsa
             pointDict.Add("lon", new List<string>());
 
             //get all tables in database
-            sql = @"SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -365,7 +390,7 @@ namespace dslsa
             pointDict.Add("lon", new List<string>());
 
             //get all tables in database
-            sql = @"SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -395,6 +420,50 @@ namespace dslsa
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
+        }
+
+        private void listView_County_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedCounty;
+            try { selectedCounty = listView_County.SelectedItems[0].Text.ToString(); }
+            catch (Exception ex)
+            {
+                listView_City.Items.Clear();
+                listView_City.BeginUpdate();
+                for (int i = 0; i < masterlist_city.Count; i++)
+                {
+                    listView_City.Items.Add(masterlist_city[i]);
+                }
+                listView_City.EndUpdate();
+                return;
+            }
+
+            string state = comboBox_State.SelectedItem.ToString();
+            List<string> filtered_cities = new List<string>();
+
+            //get cities based on selected county
+            con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT DISTINCT city FROM " + state.ToUpper() + " WHERE county='" + selectedCounty + "'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        filtered_cities.Add(Convert.ToString(rdr["city"]));
+                    }
+                }
+            }
+            filtered_cities.Sort();
+
+            listView_City.Items.Clear();
+            listView_City.BeginUpdate();
+            for (int i = 0; i < filtered_cities.Count; i++)
+            {
+                ListViewItem lvi = new ListViewItem(filtered_cities[i]);
+                listView_City.Items.Add(lvi);
+            }
+            listView_City.EndUpdate();
         }
 
         private void listView_City_Click(object sender, EventArgs e)
@@ -446,7 +515,7 @@ namespace dslsa
             pointDict.Add("lon", new List<string>());
 
             //get all tables in database
-            sql = @"SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,lat,lon FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -487,6 +556,8 @@ namespace dslsa
             gmap.Position = new PointLatLng(64.200841, -149.493673);
             gmap.ShowCenter = false;
             gmap.DisableFocusOnMouseEnter = true;
+            gmap.DragButton = MouseButtons.Left;
+            gmap.IgnoreMarkerOnMouseWheel = true;
 
         }
 
@@ -631,7 +702,7 @@ namespace dslsa
             cmd_sql = new SQLiteCommand(sql, con);
             cmd_sql.ExecuteNonQuery();
 
-            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('kmzpath','" + newpath + "')";
+            sql = string.Format("INSERT INTO FOLDERPATHS (type,value) VALUES ('kmzpath','{0}')", newpath);
             cmd_sql = new SQLiteCommand(sql, con);
             cmd_sql.ExecuteNonQuery();
 
@@ -659,7 +730,7 @@ namespace dslsa
             cmd_sql = new SQLiteCommand(sql, con);
             cmd_sql.ExecuteNonQuery();
 
-            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('pdfpath','" + newpath + "')";
+            sql = string.Format("INSERT INTO FOLDERPATHS (type,value) VALUES ('pdfpath','{0}')", newpath);
             cmd_sql = new SQLiteCommand(sql, con);
             cmd_sql.ExecuteNonQuery();
 
@@ -675,9 +746,10 @@ namespace dslsa
 
         private void buttonUpdateRecordDB_Click(object sender, EventArgs e)
         {
-
-            label_UpdateRecordDB.Text = "Uploading data. This operation may take up to 10 seconds.";
+            label_UpdateRecordDB.Text = "Uploading data. This operation may take up to 1 minute.";
             label_UpdateRecordDB.ForeColor = Color.Blue;
+            label_UpdateRecordDB.Invalidate();
+            label_UpdateRecordDB.Update();
 
             //setup database connection
             SQLiteCommand cmd_sql;
@@ -691,7 +763,6 @@ namespace dslsa
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
                 {
-
                     while (rdr.Read())
                     {
                         fname = Convert.ToString(rdr["value"]);
@@ -699,6 +770,29 @@ namespace dslsa
                 }
             }
 
+            //drop all soils report tables
+            List<string> drop_tables = new List<string>();
+            sql = "SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        string table_name = Convert.ToString(rdr["name"]).ToLower();
+                        if (!table_name.Contains("kmz") && table_name != "folderpaths")
+                        {
+                            drop_tables.Add(table_name);
+                        }
+                    }
+                }
+            }
+            foreach (string drop_table in drop_tables)
+            {
+                sql = string.Format("DROP TABLE {0}", drop_table);
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+            }
 
             //send excel data to database
             DataTable dtResult = null;
@@ -715,7 +809,7 @@ namespace dslsa
                     DataTable dt = objConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
 
                     string sheetName = string.Empty;
-
+                    string state = string.Empty;
 
                     if (dt != null)
                     {
@@ -741,30 +835,32 @@ namespace dslsa
                                 dtResult = ds.Tables["excelData"];
                                 objConn.Close();
 
+                                state = sheetName.Substring(0, sheetName.Length - 1).ToUpper();
+
                                 //create database table
-                                if (sheetName.Substring(0, sheetName.Length - 1) == "Alaska")
+                                if (state == "ALASKA")
                                 {
-                                    sql = @"CREATE TABLE IF NOT EXISTS ALASKA(" +
+                                    sql = "CREATE TABLE IF NOT EXISTS ALASKA(" +
                                         "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255)" +
                                         ")";
                                 }
                                 else
                                 {
-                                    sql = @"CREATE TABLE IF NOT EXISTS " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(" +
+                                    sql = string.Format("CREATE TABLE IF NOT EXISTS {0}(" +
                                         "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255)" +
-                                        ")";
+                                        ")", state);
                                 }
                                 cmd_sql = new SQLiteCommand(sql, con);
                                 cmd_sql.ExecuteNonQuery();
 
                                 //clear database table
-                                sql = @"DELETE FROM " + sheetName.Substring(0, sheetName.Length - 1).ToUpper();
+                                sql = "DELETE FROM " + state;
                                 cmd_sql = new SQLiteCommand(sql, con);
                                 cmd_sql.ExecuteNonQuery();
 
                                 //send datatable to database, Alaska tables are different than others
                                 cmd_sql = new SQLiteCommand();
-                                if (sheetName.Substring(0, sheetName.Length - 1) == "Alaska")
+                                if (state == "ALASKA")
                                 {
                                     using (cmd_sql = new SQLiteCommand(con))
                                     {
@@ -801,7 +897,7 @@ namespace dslsa
                                         {
                                             foreach (DataRow dataRow in dtResult.Rows)
                                             {
-                                                cmd_sql.CommandText = "INSERT INTO " + sheetName.Substring(0, sheetName.Length - 1).ToUpper() + "(report,projectnumber,client,projectname,city) VALUES (";
+                                                cmd_sql.CommandText = string.Format("INSERT INTO {0}(report,projectnumber,client,projectname,city) VALUES (", state);
                                                 for (int i = 0; i < 5; i++)
                                                 {
                                                     if (i == 4)
@@ -820,6 +916,74 @@ namespace dslsa
                                         }
                                     }
                                 }
+
+                                //get counties
+                                //create sql table from dictionary for county lookup
+                                sql = "CREATE TABLE COUNTYLOOKUP(city VARCHAR(255), county VARCHAR(255))";
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
+                                //create dictionary for unique city and county
+                                IDictionary<string, List<string>> city_county_lookup = new Dictionary<string, List<string>>();
+                                city_county_lookup.Add("city", new List<string>());
+                                city_county_lookup.Add("county", new List<string>());
+                                using (SQLiteCommand cmd_ = new SQLiteCommand("SELECT DISTINCT city FROM " + state, con))
+                                {
+                                    using (SQLiteDataReader rdr = cmd_.ExecuteReader())
+                                    {
+                                        while (rdr.Read())
+                                        {
+                                            city_county_lookup["city"].Add(Convert.ToString(rdr["city"]));
+                                        }
+                                    }
+                                }
+
+                                //do api calls to google to get county from city, state. insert into countylookuptable
+                                foreach (string city in city_county_lookup["city"])
+                                {
+                                    string county = String.Empty;
+                                    string address = city + ", " + sheetName.Substring(0, sheetName.Length - 1);
+                                    string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyAwpzN_I-e7VkE2G1uPy5_Ydk3C3xiH_xg");
+
+                                    try
+                                    {
+                                        WebRequest request = WebRequest.Create(requestUri);
+                                        WebResponse response = request.GetResponse();
+                                        XDocument xdoc = XDocument.Load(response.GetResponseStream());
+
+                                        XElement result = xdoc.Element("GeocodeResponse").Element("result");
+                                        foreach (var el in result.Elements())
+                                        {
+                                            if (el.Name == "address_component")
+                                            {
+                                                if (el.Element("type").Value == "administrative_area_level_2")
+                                                {
+                                                    county = el.Element("long_name").Value;
+                                                    city_county_lookup["county"].Add(county);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex) { }
+
+                                    sql = string.Format("INSERT INTO COUNTYLOOKUP(city,county) VALUES('{0}','{1}')", city.Replace("'", "''"), county.Replace("'", "''"));
+                                    cmd_sql = new SQLiteCommand(sql, con);
+                                    cmd_sql.ExecuteNonQuery();
+                                }
+
+                                //join counties to the alaska table
+                                sql = string.Format("ALTER TABLE {0} ADD COLUMN county VARCHAR(255)", state);
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+                                sql = string.Format("UPDATE {0} SET county = (SELECT county FROM COUNTYLOOKUP WHERE city = {0}.city)", state);
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
+
+                                //delete lookup table
+                                sql = "DROP TABLE COUNTYLOOKUP";
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
                             }
                         }
                     }
@@ -834,7 +998,7 @@ namespace dslsa
                     cmd_sql.ExecuteNonQuery();
                     label_DBUpdateTime.Text = "Database last updated on: " + now;
 
-                    label_UpdateRecordDB.Text = "Upload complete!";
+                    label_UpdateRecordDB.Text = "The database has been successfully updated!";
                     label_UpdateRecordDB.ForeColor = Color.Green;
                 }
 
@@ -843,13 +1007,14 @@ namespace dslsa
             {
                 label_UpdateRecordDB.Text = "There was an error updating the database. Please verify the soils report record excel file exists in the folder entered in the Folder Paths tab.";
                 label_UpdateRecordDB.ForeColor = Color.Red;
+                return;
             }
 
             //load options for states from database
             List<string> state_tables = new List<string>();
             comboBox_State.Items.Clear();
             //get all tables in database
-            sql = @"SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
+            sql = "SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -872,16 +1037,15 @@ namespace dslsa
             comboBox_State.SelectedItem = "Alaska";
             comboBoxState_SelectedValueChanged(sender, e);
 
-
             con.Close();
-
-
         }
 
         private void button_UpdateKMZDB_Click(object sender, EventArgs e)
         {
-            label_UpdateKMZDB.Text = "Uploading data. This operation may take up to 10 seconds.";
+            label_UpdateKMZDB.Text = "Uploading data. This operation may take up to 1 minute.";
             label_UpdateKMZDB.ForeColor = Color.Blue;
+            label_UpdateKMZDB.Invalidate();
+            label_UpdateKMZDB.Update();
 
             //setup database connection
             SQLiteCommand cmd_sql;
@@ -1029,6 +1193,16 @@ namespace dslsa
                 }
             }
 
+            //reset datetime of update
+            DateTime now = DateTime.Now;
+            sql = "DELETE FROM FOLDERPATHS WHERE type='kmz_update_datetime'";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('kmz_update_datetime','" + now + "')";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+            label_KMZDBUpdateTime.Text = "Database last updated on: " + now;
+
             label_UpdateKMZDB.Text = "Upload complete!";
             label_UpdateKMZDB.ForeColor = Color.Green;
 
@@ -1081,6 +1255,7 @@ namespace dslsa
             cols.Add("report");
             string selectedPN = String.Empty;
             string selectedProjName = String.Empty;
+            string selectedCounty = String.Empty;
             string selectedCity = String.Empty;
 
             try
@@ -1096,6 +1271,15 @@ namespace dslsa
                 selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
                 cols.Add("projectname");
                 query_whereclause.Add("projectname='" + selectedProjName + "'");
+
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedCounty = listView_County.SelectedItems[0].Text.ToString();
+                cols.Add("county");
+                query_whereclause.Add("county='" + selectedCounty + "'");
 
             }
             catch (Exception) { }
@@ -1121,7 +1305,8 @@ namespace dslsa
             textBox_Results.ForeColor = Color.Black;
 
             string colnames = string.Join(",", cols.ToArray());
-            string query_wherestring = string.Join(" AND ", query_whereclause.ToArray());
+            string query_type = comboBox_QueryType.SelectedItem.ToString();
+            string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
 
             //query database for selections
             string state = comboBox_State.SelectedItem.ToString();
@@ -1152,7 +1337,10 @@ namespace dslsa
         {
             listView_PN.SelectedItems.Clear();
             listView_ProjName.SelectedItems.Clear();
+            listView_County.SelectedItems.Clear();
             listView_City.SelectedItems.Clear();
+
+            comboBox_QueryType.SelectedItem = "AND";
 
             gmap.Overlays.Clear();
             map_report_list.Clear();
@@ -1201,6 +1389,11 @@ namespace dslsa
         {
             map_report_list.Clear();
             listView_MapReports.Items.Clear();
+        }
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

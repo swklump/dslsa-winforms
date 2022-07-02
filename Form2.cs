@@ -35,6 +35,10 @@ namespace dslsa
         private void Form_SearchResults_Load(object sender, EventArgs e)
         {
             report_nums = ((Form1)f).report_nums;
+            if (report_nums.Count() > 20)
+            {
+                button_OpenPDFs.Visible = false;
+            }
             textBox_SearchResults.BackColor = Color.White;
 
             //display number of results to label
@@ -82,6 +86,11 @@ namespace dslsa
 
         private void button_OpenPDFs_Click(object sender, EventArgs e)
         {
+            textBox_SearchResults.Text = "Processing...";
+            textBox_SearchResults.ForeColor = Color.Blue;
+            textBox_SearchResults.Invalidate();
+            textBox_SearchResults.Update();
+
             List<string> pdfsnotfound = new List<string>();
             string message = string.Empty;
             string reportstring = string.Empty;
@@ -89,7 +98,7 @@ namespace dslsa
             {
                 foreach (var report in report_nums)
                 {
-                    try
+                    if (File.Exists(pdffolder + report + ".pdf"))
                     {
                         p.StartInfo = new ProcessStartInfo()
                         {
@@ -99,7 +108,7 @@ namespace dslsa
                         };
                         p.Start();
                     }
-                    catch (Exception ex)
+                    else
                     {
                         pdfsnotfound.Add(report);
                     }
@@ -132,7 +141,6 @@ namespace dslsa
         {
             //folder select dialog
             folderBrowserDialog1 = new FolderBrowserDialog();
-            //folderBrowserDialog1.ShowDialog();
             string folderName = String.Empty;
 
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
@@ -146,6 +154,10 @@ namespace dslsa
                     return;
                 }
 
+                textBox_SearchResults.Text = "Processing...";
+                textBox_SearchResults.ForeColor = Color.Blue;
+                textBox_SearchResults.Invalidate();
+                textBox_SearchResults.Update();
 
                 //copy files to selected folder
                 List<string> pdfsnotfound = new List<string>();
@@ -153,11 +165,11 @@ namespace dslsa
                 {
                     string sourceFile = pdffolder + report + ".pdf";
                     string destFile = folderName + @"\SoilReportPDFs\" + report + ".pdf";
-                    try
+                    if (File.Exists(pdffolder + report + ".pdf"))
                     {
                         File.Copy(sourceFile, destFile, true);
                     }
-                    catch (Exception ex)
+                    else
                     {
                         pdfsnotfound.Add(report);
                     }
@@ -173,16 +185,28 @@ namespace dslsa
                     textBox_SearchResults.ForeColor = Color.Red;
                     return;
                 }
-                //try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
-                //catch (IOException)
-                //{
-                //    textBox_SearchResults.Text = "A folder called 'SoilsReportPDFs' already exists in the directory specified. Please delete the existing folder or select a different directory.";
-                //    textBox_SearchResults.ForeColor = Color.Red;
-                //    return;
-                //}
 
-                textBox_SearchResults.Text = "PDF saved in specified folder!";
-                textBox_SearchResults.ForeColor = Color.Green;
+                string message = string.Empty;
+                string reportstring = string.Empty;
+                if (pdfsnotfound.Count == report_nums.Count)
+                {
+                    message = "No PDFs have been saved! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                    reportstring = string.Join(",", pdfsnotfound.ToArray());
+                    textBox_SearchResults.Text = message + reportstring;
+                    textBox_SearchResults.ForeColor = Color.Red;
+                }
+                else if (pdfsnotfound.Count == 0)
+                {
+                    textBox_SearchResults.Text = "All PDFs have been successfully saved in the selected folder!";
+                    textBox_SearchResults.ForeColor = Color.Green;
+                }
+                else
+                {
+                    message = "PDFs have been saved in the selected folder! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                    reportstring = string.Join(",", pdfsnotfound.ToArray());
+                    textBox_SearchResults.Text = message + reportstring;
+                    textBox_SearchResults.ForeColor = Color.Green;
+                }
             }
             else
             {
@@ -195,9 +219,15 @@ namespace dslsa
 
         private void button_EmailPDFs_Click(object sender, EventArgs e)
         {
+            textBox_SearchResults.Text = "Processing...";
+            textBox_SearchResults.ForeColor = Color.Blue;
+            textBox_SearchResults.Invalidate();
+            textBox_SearchResults.Update();
 
             //create a temp folder
             string tempPath = Path.GetTempPath();
+            Directory.Delete(tempPath + @"\SoilReportPDFs", true);
+            File.Delete(tempPath + @"\SoilReportPDFs.zip");
             Directory.CreateDirectory(tempPath + @"\SoilReportPDFs");
 
             //copy files to temp folder
@@ -225,6 +255,7 @@ namespace dslsa
             }
 
             //create outlook message
+            Process.Start("OutLook.exe");
             Outlook.Application oApp = new Outlook.Application();
             Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
 

@@ -9,6 +9,7 @@
       "dslsa/1.0.0": {
         "dependencies": {
           "GMap.NET.WinForms": "2.1.6",
+          "GoogleMaps.LocationServices": "1.2.0.5",
           "Microsoft.Office.Interop.Outlook": "15.0.4797.1004",
           "Microsoft.Office.Interop.Word": "15.0.4797.1004",
           "MicrosoftOfficeCore": "15.0.0",
@@ -61,6 +62,14 @@
           "lib/net6.0-windows7.0/GMap.NET.WindowsForms.dll": {
             "assemblyVersion": "2.1.6.0",
             "fileVersion": "2.1.6.0"
+          }
+        }
+      },
+      "GoogleMaps.LocationServices/1.2.0.5": {
+        "runtime": {
+          "lib/netstandard2.0/GoogleMaps.LocationServices.dll": {
+            "assemblyVersion": "1.2.0.5",
+            "fileVersion": "1.2.0.5"
           }
         }
       },
@@ -377,6 +386,13 @@
       "sha512": "sha512-2i5xewUZN4gjUdjWN/r54TybhaxRJDsoDHqIub0C9juLbyXF6bodL2/moK6UM5LAcol2GZee4Bxy8hD4E9bGaQ==",
       "path": "gmap.net.winforms/2.1.6",
       "hashPath": "gmap.net.winforms.2.1.6.nupkg.sha512"
+    },
+    "GoogleMaps.LocationServices/1.2.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0j3RL5+acxYgQNz72JdXJ1nUKxMGaY+6UvrOIOxZfp0qpJOUmo/ivCAm53atbnuy0z3vrZK+j9mZifh35UBqag==",
+      "path": "googlemaps.locationservices/1.2.0.5",
+      "hashPath": "googlemaps.locationservices.1.2.0.5.nupkg.sha512"
     },
     "Microsoft.CSharp/4.7.0": {
       "type": "package",

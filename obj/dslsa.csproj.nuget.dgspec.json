@@ -48,6 +48,10 @@
               "target": "Package",
               "version": "[2.1.6, )"
             },
+            "GoogleMaps.LocationServices": {
+              "target": "Package",
+              "version": "[1.2.0.5, )"
+            },
             "Microsoft.Office.Interop.Outlook": {
               "target": "Package",
               "version": "[15.0.4797.1004, )"

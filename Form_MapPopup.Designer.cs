@@ -36,6 +36,7 @@
             this.button_OpenPDF = new System.Windows.Forms.Button();
             this.button_AddToList = new System.Windows.Forms.Button();
             this.label_Message = new System.Windows.Forms.Label();
+            this.button_EmailPDF = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label_Report
@@ -78,7 +79,7 @@
             // 
             this.button_OpenPDF.Location = new System.Drawing.Point(17, 118);
             this.button_OpenPDF.Name = "button_OpenPDF";
-            this.button_OpenPDF.Size = new System.Drawing.Size(165, 23);
+            this.button_OpenPDF.Size = new System.Drawing.Size(112, 23);
             this.button_OpenPDF.TabIndex = 4;
             this.button_OpenPDF.Text = "Open PDF";
             this.button_OpenPDF.UseVisualStyleBackColor = true;
@@ -86,9 +87,9 @@
             // 
             // button_AddToList
             // 
-            this.button_AddToList.Location = new System.Drawing.Point(202, 118);
+            this.button_AddToList.Location = new System.Drawing.Point(260, 118);
             this.button_AddToList.Name = "button_AddToList";
-            this.button_AddToList.Size = new System.Drawing.Size(165, 23);
+            this.button_AddToList.Size = new System.Drawing.Size(116, 23);
             this.button_AddToList.TabIndex = 4;
             this.button_AddToList.Text = "Add to list";
             this.button_AddToList.UseVisualStyleBackColor = true;
@@ -102,12 +103,23 @@
             this.label_Message.Size = new System.Drawing.Size(0, 15);
             this.label_Message.TabIndex = 3;
             // 
+            // button_EmailPDF
+            // 
+            this.button_EmailPDF.Location = new System.Drawing.Point(135, 118);
+            this.button_EmailPDF.Name = "button_EmailPDF";
+            this.button_EmailPDF.Size = new System.Drawing.Size(119, 23);
+            this.button_EmailPDF.TabIndex = 4;
+            this.button_EmailPDF.Text = "Email PDF";
+            this.button_EmailPDF.UseVisualStyleBackColor = true;
+            this.button_EmailPDF.Click += new System.EventHandler(this.button_EmailPDF_Click);
+            // 
             // Form_MapPopup
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(388, 175);
             this.Controls.Add(this.button_AddToList);
+            this.Controls.Add(this.button_EmailPDF);
             this.Controls.Add(this.button_OpenPDF);
             this.Controls.Add(this.label_Message);
             this.Controls.Add(this.label_Client);
@@ -132,5 +144,6 @@
         private Button button_OpenPDF;
         private Button button_AddToList;
         private Label label_Message;
+        private Button button_EmailPDF;
     }
 }
