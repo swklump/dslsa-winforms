@@ -145,7 +145,7 @@ namespace dslsa
                 oMsg.HTMLBody += "Thanks,";
                 int pos = (int)oMsg.Body.Length + 1;
                 int attachType = (int)Outlook.OlAttachmentType.olByValue;
-                Outlook.Attachment oAttach = oMsg.Attachments.Add(pdffolder + report + ".pdf", attachType, pos, pdffolder + report + ".pdf");
+                Outlook.Attachment oAttach = oMsg.Attachments.Add(pdffolder + report + ".pdf", attachType, pos, report + ".pdf");
                 oMsg.Display(false);
 
                 label_Message.Text = "Email draft created!";
