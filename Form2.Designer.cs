@@ -88,6 +88,8 @@
             // 
             // textBox_SearchResults
             // 
+            this.textBox_SearchResults.BackColor = System.Drawing.SystemColors.Window;
+            this.textBox_SearchResults.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_SearchResults.ForeColor = System.Drawing.SystemColors.WindowText;
             this.textBox_SearchResults.Location = new System.Drawing.Point(26, 9);
             this.textBox_SearchResults.Multiline = true;
@@ -102,6 +104,7 @@
             this.AcceptButton = this.button_OpenPDFs;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(472, 180);
             this.Controls.Add(this.textBox_SearchResults);
             this.Controls.Add(this.button2);
@@ -109,6 +112,7 @@
             this.Controls.Add(this.button_SavePDFs);
             this.Controls.Add(this.button_OpenPDFs);
             this.Controls.Add(this.label_WhatToDo);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form2";

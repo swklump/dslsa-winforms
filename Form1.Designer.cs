@@ -33,6 +33,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.button_ClearMapList = new System.Windows.Forms.Button();
             this.button_SearchMapPDFs = new System.Windows.Forms.Button();
+            this.label16 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.listView_MapReports = new System.Windows.Forms.ListView();
             this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
@@ -98,7 +99,6 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -143,7 +143,6 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Main Application";
             this.tabPage1.UseVisualStyleBackColor = true;
-            this.tabPage1.Click += new System.EventHandler(this.tabPage1_Click);
             // 
             // button_ClearMapList
             // 
@@ -164,6 +163,16 @@
             this.button_SearchMapPDFs.Text = "Search Map PDFs";
             this.button_SearchMapPDFs.UseVisualStyleBackColor = true;
             this.button_SearchMapPDFs.Click += new System.EventHandler(this.button_SearchMapPDFs_Click);
+            // 
+            // label16
+            // 
+            this.label16.BackColor = System.Drawing.Color.Transparent;
+            this.label16.Location = new System.Drawing.Point(592, 654);
+            this.label16.Name = "label16";
+            this.label16.Padding = new System.Windows.Forms.Padding(2, 2, 0, 0);
+            this.label16.Size = new System.Drawing.Size(231, 36);
+            this.label16.TabIndex = 10;
+            this.label16.Text = "Select from the project number, name, or city lists to view report locations.";
             // 
             // label17
             // 
@@ -205,7 +214,8 @@
             // 
             // textBox_Results
             // 
-            this.textBox_Results.BackColor = System.Drawing.SystemColors.Control;
+            this.textBox_Results.BackColor = System.Drawing.SystemColors.Window;
+            this.textBox_Results.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_Results.Location = new System.Drawing.Point(592, 7);
             this.textBox_Results.Multiline = true;
             this.textBox_Results.Name = "textBox_Results";
@@ -818,16 +828,6 @@
             this.label6.TabIndex = 0;
             this.label6.Text = "Please log in below.";
             // 
-            // label16
-            // 
-            this.label16.BackColor = System.Drawing.Color.Transparent;
-            this.label16.Location = new System.Drawing.Point(592, 654);
-            this.label16.Name = "label16";
-            this.label16.Padding = new System.Windows.Forms.Padding(2, 2, 0, 0);
-            this.label16.Size = new System.Drawing.Size(231, 36);
-            this.label16.TabIndex = 10;
-            this.label16.Text = "Select from the project number, name, or city lists to view report locations.";
-            // 
             // Form1
             // 
             this.AcceptButton = this.button_SearchPDFs;
@@ -837,6 +837,7 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(1262, 747);
             this.Controls.Add(this.tabControl1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;

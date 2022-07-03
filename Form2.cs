@@ -16,6 +16,7 @@ namespace dslsa
         public List<string> report_nums = new List<string>();
         private FolderBrowserDialog folderBrowserDialog1;
         private string pdffolder;
+        private string selectedState;
         private string dbpath = @"dslsa_database.db";
 
         //NAVIGATION METHODS............................................................
@@ -35,11 +36,12 @@ namespace dslsa
         private void Form_SearchResults_Load(object sender, EventArgs e)
         {
             report_nums = ((Form1)f).report_nums;
+            selectedState = ((Form1)f).selectedState + @"\";
             if (report_nums.Count() > 20)
             {
                 button_OpenPDFs.Visible = false;
             }
-            textBox_SearchResults.BackColor = Color.White;
+            textBox_SearchResults.BackColor = SystemColors.Control;
 
             //display number of results to label
             if (report_nums.Count == 0)
@@ -47,9 +49,8 @@ namespace dslsa
                 textBox_SearchResults.Text = "There were no reports found! Please return to the main menu and try another selection.";
                 textBox_SearchResults.ForeColor = Color.Red;
 
-                button_OpenPDFs.Visible = false;
-                button_SavePDFs.Visible = false;
-                button_EmailPDFs.Visible = false;
+                List<Button> buttons_tohide = new List<Button>() { button_OpenPDFs, button_SavePDFs, button_EmailPDFs };
+                foreach (Button button in buttons_tohide) { button.Visible = false; }
                 label_WhatToDo.Visible = false;
             }
             else if (report_nums.Count == 1)
@@ -64,21 +65,17 @@ namespace dslsa
             }
 
             //get pdf folder
-            //setup database connection
             SQLiteCommand cmd_sql;
             SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
             con.Open();
             string sql = string.Empty;
-
-            //get excel report path
             using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
                 {
-
                     while (rdr.Read())
                     {
-                        pdffolder = Convert.ToString(rdr["value"]) + @"\";
+                        pdffolder = Convert.ToString(rdr["value"]) + @"\" + selectedState;
                     }
                 }
             }
@@ -94,6 +91,8 @@ namespace dslsa
             List<string> pdfsnotfound = new List<string>();
             string message = string.Empty;
             string reportstring = string.Empty;
+
+            //open the pdfs, start outlook if not already open
             using (Process p = new Process())
             {
                 foreach (var report in report_nums)
@@ -115,6 +114,7 @@ namespace dslsa
                 }
             }
 
+            //change the label message depending on what reports exist
             if (pdfsnotfound.Count == report_nums.Count)
             {
                 message = "No PDFs have been opened! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
@@ -186,6 +186,7 @@ namespace dslsa
                     return;
                 }
 
+                //change the label message depending on what reports exist
                 string message = string.Empty;
                 string reportstring = string.Empty;
                 if (pdfsnotfound.Count == report_nums.Count)
@@ -213,8 +214,6 @@ namespace dslsa
                 textBox_SearchResults.Text = "No save folder specified.";
                 textBox_SearchResults.ForeColor = Color.Red;
             }
-
-
         }
 
         private void button_EmailPDFs_Click(object sender, EventArgs e)
@@ -226,8 +225,6 @@ namespace dslsa
 
             //create a temp folder
             string tempPath = Path.GetTempPath();
-            Directory.Delete(tempPath + @"\SoilReportPDFs", true);
-            File.Delete(tempPath + @"\SoilReportPDFs.zip");
             Directory.CreateDirectory(tempPath + @"\SoilReportPDFs");
 
             //copy files to temp folder
@@ -255,30 +252,39 @@ namespace dslsa
             }
 
             //create outlook message
-            Process.Start("OutLook.exe");
-            Outlook.Application oApp = new Outlook.Application();
-            Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
+            try
+            {
+                if (Process.GetProcessesByName("outlook").Length == 0)
+                {
+                    Process.Start("OutLook.exe");
+                }
+                Outlook.Application oApp = new Outlook.Application();
+                Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
 
-            oMsg.Subject = "Soils Report PDF Attached";
-            oMsg.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
-            oMsg.HTMLBody = "Hello,<br/>";
-            oMsg.HTMLBody += "<br/>";
-            oMsg.HTMLBody += "See attached for requested soils report.<br/>";
-            oMsg.HTMLBody += "<br/>";
-            oMsg.HTMLBody += "Thanks,";
-            int pos = (int)oMsg.Body.Length + 1;
-            int attachType = (int)Outlook.OlAttachmentType.olByValue;
-            Outlook.Attachment oAttach = oMsg.Attachments.Add(tempPath + @"\SoilReportPDFs.zip", attachType, pos, "SoilReportPDFs.zip");
-            oMsg.Display(false); //In order to display it in modal inspector change the argument to true
+                oMsg.Subject = "Soils Report PDF Attached";
+                oMsg.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
+                oMsg.HTMLBody = "Hello,<br/>";
+                oMsg.HTMLBody += "<br/>";
+                oMsg.HTMLBody += "See attached for requested soils report.<br/>";
+                oMsg.HTMLBody += "<br/>";
+                oMsg.HTMLBody += "Thanks,";
+                int pos = (int)oMsg.Body.Length + 1;
+                int attachType = (int)Outlook.OlAttachmentType.olByValue;
+                Outlook.Attachment oAttach = oMsg.Attachments.Add(tempPath + @"\SoilReportPDFs.zip", attachType, pos, "SoilReportPDFs.zip");
+                oMsg.Display(false);
 
-            //delete the temp folders
-            Directory.Delete(tempPath + @"\SoilReportPDFs", true);
-            File.Delete(tempPath + @"\SoilReportPDFs.zip");
+                //delete the temp folders
+                Directory.Delete(tempPath + @"\SoilReportPDFs", true);
+                File.Delete(tempPath + @"\SoilReportPDFs.zip");
 
-
-            textBox_SearchResults.Text = "Email draft has been successfully opened!";
-            textBox_SearchResults.ForeColor = Color.Green;
-
+                textBox_SearchResults.Text = "Email draft has been successfully opened!";
+                textBox_SearchResults.ForeColor = Color.Green;
+            }
+            catch (Exception ex)
+            {
+                textBox_SearchResults.Text = "Email draft could not be created. Restart Outlook and try again.";
+                textBox_SearchResults.ForeColor = Color.Red;
+            }
         }
     }
 }
