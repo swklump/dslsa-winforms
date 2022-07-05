@@ -130,6 +130,7 @@ namespace dslsa
             con.Close();
 
             comboBox_State.SelectedItem = "Alaska";
+            selectedState = "Alaska";
             comboBox_QueryType.SelectedItem = "AND";
         }
 
@@ -140,11 +141,15 @@ namespace dslsa
             marker_list.Clear();
             map_report_list.Clear();
             listView_MapReports.Items.Clear();
+            List<string> keys;
 
             List<ListView> items_toclear = new List<ListView>() { listView_PN, listView_ProjName, listView_County, listView_City };
             foreach (ListView listitem in items_toclear) { listitem.Items.Clear(); }
 
             string state = comboBox_State.SelectedItem.ToString();
+            selectedState = state;
+            if (state == "Alaska") { label_AncGrid.Visible = true; comboBox_AncGrid.Visible = true; }
+            else { label_AncGrid.Visible = false; comboBox_AncGrid.Visible = false; }
 
             //set state centerpoint
             try
@@ -156,13 +161,12 @@ namespace dslsa
 
             //read data from sqlite db to dictionary
             Dictionary<string, List<string>> dict_cols = new Dictionary<string, List<string>>();
-            List<string> keys = new List<string>() { "projectnumber", "projectname", "county", "city" };
+            if (state == "Alaska") { keys = new List<string>() { "projectnumber", "projectname", "county", "city", "anchoragegrid" }; }
+            else { keys = new List<string>() { "projectnumber", "projectname", "county", "city" }; }
             foreach (string k in keys) { dict_cols.Add(k, new List<string>()); }
 
             con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
             con.Open();
-
-            List<string> sql_list = new List<string>() { "projectnumber", "projectname", "county", "city" };
 
             foreach (KeyValuePair<string, List<string>> kvp in dict_cols)
             {
@@ -189,40 +193,47 @@ namespace dslsa
             masterlist_city = new List<ListViewItem>();
 
             listView_PN.BeginUpdate();
-            for (int i = 0; i < dict_cols["projectnumber"].Count; i++)
+            foreach (string pn in dict_cols["projectnumber"])
             {
-                ListViewItem lvi = new ListViewItem(dict_cols["projectnumber"][i]);
+                ListViewItem lvi = new ListViewItem(pn);
                 listView_PN.Items.Add(lvi);
                 masterlist_pn.Add(lvi);
             }
             listView_PN.EndUpdate();
 
             listView_ProjName.BeginUpdate();
-            for (int i = 0; i < dict_cols["projectname"].Count; i++)
+            foreach (string name in dict_cols["projectname"])
             {
-                ListViewItem lvi = new ListViewItem(dict_cols["projectname"][i]);
+                ListViewItem lvi = new ListViewItem(name);
                 listView_ProjName.Items.Add(lvi);
                 masterlist_projname.Add(lvi);
             }
             listView_ProjName.EndUpdate();
 
             listView_County.BeginUpdate();
-            for (int i = 0; i < dict_cols["county"].Count; i++)
+            foreach (string county in dict_cols["county"])
             {
-                ListViewItem lvi = new ListViewItem(dict_cols["county"][i]);
+                ListViewItem lvi = new ListViewItem(county);
                 listView_County.Items.Add(lvi);
                 masterlist_county.Add(lvi);
             }
             listView_County.EndUpdate();
 
             listView_City.BeginUpdate();
-            for (int i = 0; i < dict_cols["city"].Count; i++)
+            foreach (string city in dict_cols["city"])
             {
-                ListViewItem lvi = new ListViewItem(dict_cols["city"][i]);
+                ListViewItem lvi = new ListViewItem(city);
                 listView_City.Items.Add(lvi);
                 masterlist_city.Add(lvi);
             }
             listView_City.EndUpdate();
+
+            //comboBox_AncGrid.BeginUpdate();
+            if (state == "Alaska")
+            {
+                foreach (string grid in dict_cols["anchoragegrid"]) { comboBox_AncGrid.Items.Add(grid); }
+            }
+            //comboBox_AncGrid.EndUpdate();
 
             //clear search boxes
             List<TextBox> clearboxes = new List<TextBox>() { textBox_PN, textBox_ProjName, textBox_County, textBox_City };
@@ -252,6 +263,101 @@ namespace dslsa
             List<TextBox> clearboxes = new List<TextBox>() { textBox_PN, textBox_ProjName, textBox_County, textBox_City };
             foreach (TextBox box in clearboxes) { box.Text = ""; }
         }
+
+        private void comboBox_QueryType_SelectedValueChanged(object sender, EventArgs e)
+        {
+            gmap.Overlays.Clear();
+            marker_list.Clear();
+            string state = comboBox_State.SelectedItem.ToString();
+
+            //build the where clause based on all selections
+            List<string> query_whereclause = new List<string>();
+            string selectedPN;
+            string selectedProjName;
+            string selectedCity;
+
+            try
+            {
+                selectedPN = listView_PN.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectnumber='" + selectedPN + "'");
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectname='" + selectedProjName + "'");
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedCity = listView_City.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("city='" + selectedCity + "'");
+            }
+            catch (Exception) { }
+
+            string query_type = comboBox_QueryType.SelectedItem.ToString();
+            string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
+            if (query_whereclause.Count() == 0)
+            {
+                textBox_Results.Text = "";
+                return;
+            }
+
+            //reset marker dict
+            pointDict.Clear();
+            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "lat", "lon", "type", "depth", "year" };
+            foreach (string k in pointdictkeys) { pointDict.Add(k, new List<string>()); }
+
+            //setup database connection
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql;
+
+            //get markers
+            sql = "SELECT report,projectnumber,projectname,client,lat,lon,type,depth,year FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        foreach (KeyValuePair<string, List<string>> kvp in pointDict) { pointDict[kvp.Key].Add(Convert.ToString(rdr[kvp.Key])); }
+                    }
+                }
+            }
+
+            //check if any markers found
+            if (pointDict["lat"].Count() == 0)
+            {
+                textBox_Results.Text = "No georeferencing exists for this selection.";
+                textBox_Results.ForeColor = Color.Red;
+                try
+                {
+                    gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                    gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+                }
+                catch (Exception ex) { }
+                return;
+            }
+            textBox_Results.Text = "";
+
+            // add markers
+            GMapOverlay markers = new GMapOverlay("markers");
+            for (int i = 0; i < pointDict["lat"].Count(); i++)
+            {
+                GMapMarker marker =
+                    new GMarkerGoogle(
+                        new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
+                        GMarkerGoogleType.blue_pushpin);
+                markers.Markers.Add(marker);
+                marker_list.Add(marker);
+            }
+            gmap.Overlays.Add(markers);
+            gmap.ZoomAndCenterMarkers("markers");
+        }
+
 
 
 
@@ -344,19 +450,19 @@ namespace dslsa
             try
             {
                 selectedCity = listView_City.SelectedItems[0].Text.ToString();
-                query_whereclause.Add("city='" + selectedPN + "'");
+                query_whereclause.Add("city='" + selectedCity + "'");
             }
             catch (Exception) { }
 
-
-            string query_wherestring = string.Join(" OR ", query_whereclause.ToArray());
+            string query_type = comboBox_QueryType.SelectedItem.ToString();
+            string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
             if (query_wherestring == "")
             {
                 query_wherestring += "projectnumber='" + selectedPN + "'";
             }
             else
             {
-                query_wherestring += "OR projectnumber='" + selectedPN + "'";
+                query_wherestring += " " + query_type + " projectnumber='" + selectedPN + "'";
             }
 
             //reset marker dict
@@ -381,6 +487,21 @@ namespace dslsa
                     }
                 }
             }
+
+            //check if any markers found
+            if (pointDict["lat"].Count() == 0)
+            {
+                textBox_Results.Text = "No georeferencing exists for this selection.";
+                textBox_Results.ForeColor = Color.Red;
+                try
+                {
+                    gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                    gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+                }
+                catch (Exception ex) { }
+                return;
+            }
+            textBox_Results.Text = "";
 
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
@@ -422,14 +543,16 @@ namespace dslsa
                 query_whereclause.Add("city='" + selectedCity + "'");
             }
             catch (Exception) { }
-            string query_wherestring = string.Join(" OR ", query_whereclause.ToArray());
+
+            string query_type = comboBox_QueryType.SelectedItem.ToString();
+            string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
             if (query_wherestring == "")
             {
                 query_wherestring += "projectname='" + selectedProjName + "'";
             }
             else
             {
-                query_wherestring += "OR projectname='" + selectedProjName + "'";
+                query_wherestring += query_type + " projectname='" + selectedProjName + "'";
             }
 
             //reset marker dict
@@ -454,6 +577,21 @@ namespace dslsa
                     }
                 }
             }
+
+            //check if any markers found
+            if (pointDict["lat"].Count() == 0)
+            {
+                textBox_Results.Text = "No georeferencing exists for this selection.";
+                textBox_Results.ForeColor = Color.Red;
+                try
+                {
+                    gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                    gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+                }
+                catch (Exception ex) { }
+                return;
+            }
+            textBox_Results.Text = "";
 
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
@@ -539,14 +677,16 @@ namespace dslsa
                 query_whereclause.Add("projectname='" + selectedProjName + "'");
             }
             catch (Exception) { }
-            string query_wherestring = string.Join(" OR ", query_whereclause.ToArray());
+
+            string query_type = comboBox_QueryType.SelectedItem.ToString();
+            string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
             if (query_wherestring == "")
             {
                 query_wherestring += "city='" + selectedCity + "'";
             }
             else
             {
-                query_wherestring += "OR city='" + selectedCity + "'";
+                query_wherestring += query_type + " city='" + selectedCity + "'";
             }
 
             //reset marker dict
@@ -572,6 +712,21 @@ namespace dslsa
                 }
             }
 
+            //check if any markers found
+            if (pointDict["lat"].Count() == 0)
+            {
+                textBox_Results.Text = "No georeferencing exists for this selection.";
+                textBox_Results.ForeColor = Color.Red;
+                try
+                {
+                    gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                    gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+                }
+                catch (Exception ex) { }
+                return;
+            }
+            textBox_Results.Text = "";
+
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
@@ -586,6 +741,11 @@ namespace dslsa
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
+        }
+
+        private void comboBox_AncGrid_SelectedValueChanged(object sender, EventArgs e)
+        {
+
         }
 
         private void listView_MapReports_DoubleClick(object sender, EventArgs e)
@@ -734,7 +894,34 @@ namespace dslsa
             con.Open();
 
             string newpath = textBox_NewKMZPath.Text;
+            List<string> ancfiles = new List<string>();
 
+            //check that Alaska>>Anchorage>>redfiles.kmz exists in specified folder
+            try { ancfiles = Directory.GetFiles(newpath, "*").ToList(); }
+            catch (Exception ex)
+            {
+                label_KMZPathMessage.Text = "The specifed folder does not exist. Please select the folder with state subdirectories and associated redfile KMZs.";
+                label_KMZPathMessage.ForeColor = Color.Red;
+                con.Close();
+                return;
+            }
+
+            bool filefound = false;
+            foreach (string ancfile in ancfiles)
+            {
+                string filename = ancfile.Replace(newpath + @"\Alaska\Anchorage" + @"\", "").ToLower();
+                if (filename.Contains("redfiles") && !filename.Contains("project"))
+                {
+                    filefound = true;
+                }
+            }
+            if (!filefound)
+            {
+                label_KMZPathMessage.Text = "The specifed folder is not correct. Please select the folder with state subdirectories and associated redfile KMZs.";
+                label_KMZPathMessage.ForeColor = Color.Red;
+                con.Close();
+                return;
+            }
             string sql = string.Empty;
             sql = "DELETE FROM FOLDERPATHS WHERE type='kmzpath'";
             cmd_sql = new SQLiteCommand(sql, con);
@@ -895,6 +1082,7 @@ namespace dslsa
                                 cmd_sql = new SQLiteCommand(sql, con);
                                 cmd_sql.ExecuteNonQuery();
 
+
                                 //send datatable to database, Alaska columns difference
                                 if (state == "ALASKA")
                                 {
@@ -972,7 +1160,7 @@ namespace dslsa
                                     }
                                 }
 
-                                label_UpdateRecordDB.Text = labelmessageintro + "\n" + string.Format("Parsing... {0}", state);
+                                label_UpdateRecordDB.Text = labelmessageintro + "\n" + string.Format("Parsing {0}...", state);
                                 label_UpdateRecordDB.Text += "\nGetting counties from Google Maps API...";
                                 label_UpdateRecordDB.ForeColor = Color.Blue;
                                 label_UpdateRecordDB.Invalidate();
@@ -1132,23 +1320,20 @@ namespace dslsa
                 cmd_sql.ExecuteNonQuery();
             }
 
-            //get kmz file names
             string searchstring;
             int startindex;
             int endindex;
             string state_name;
+            //get kmz file names
             //loop through each state folder in the kmz path
             List<string> directories_states = Directory.GetDirectories(fname).ToList();
 
             try
             {
-
                 foreach (string dir_state in directories_states)
                 {
                     List<string> final_files = new List<string>();
                     state_name = dir_state.Replace(fname + @"\", "").ToUpper();
-
-
 
                     //loop through each city folder in the state folder
                     List<string> directories_cities = Directory.GetDirectories(dir_state).ToList();
@@ -1243,6 +1428,7 @@ namespace dslsa
                                         }
 
                                     }
+                                }
                                 catch (Exception)
                                 {
                                     label_UpdateKMZDB.Text = file;
@@ -1427,11 +1613,18 @@ namespace dslsa
                 con.Close();
             }
 
+            //if popup form is open, close it
+            if (Application.OpenForms.OfType<Form_MapPopup>().Any())
+            {
+                Application.OpenForms.OfType<Form_MapPopup>().First().Close();
+            }
+
             //open the search results form
             this.Hide();
             Form2 s = new Form2();
             s.Show();
         }
+
 
     }
 }

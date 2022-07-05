@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label_AncGrid = new System.Windows.Forms.Label();
             this.button_ClearMapList = new System.Windows.Forms.Button();
             this.button_SearchMapPDFs = new System.Windows.Forms.Button();
             this.label16 = new System.Windows.Forms.Label();
@@ -59,6 +60,7 @@
             this.listView_ProjName = new System.Windows.Forms.ListView();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.button_SearchPDFs = new System.Windows.Forms.Button();
+            this.comboBox_AncGrid = new System.Windows.Forms.ComboBox();
             this.comboBox_QueryType = new System.Windows.Forms.ComboBox();
             this.comboBox_State = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
@@ -121,6 +123,7 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.label_AncGrid);
             this.tabPage1.Controls.Add(this.button_ClearMapList);
             this.tabPage1.Controls.Add(this.button_SearchMapPDFs);
             this.tabPage1.Controls.Add(this.label16);
@@ -132,6 +135,7 @@
             this.tabPage1.Controls.Add(this.tableLayoutPanel2);
             this.tabPage1.Controls.Add(this.tableLayoutPanel1);
             this.tabPage1.Controls.Add(this.button_SearchPDFs);
+            this.tabPage1.Controls.Add(this.comboBox_AncGrid);
             this.tabPage1.Controls.Add(this.comboBox_QueryType);
             this.tabPage1.Controls.Add(this.comboBox_State);
             this.tabPage1.Controls.Add(this.label10);
@@ -143,6 +147,15 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Main Application";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label_AncGrid
+            // 
+            this.label_AncGrid.Location = new System.Drawing.Point(397, 48);
+            this.label_AncGrid.Name = "label_AncGrid";
+            this.label_AncGrid.Size = new System.Drawing.Size(81, 20);
+            this.label_AncGrid.TabIndex = 12;
+            this.label_AncGrid.Text = "Select a grid...";
+            this.label_AncGrid.Visible = false;
             // 
             // button_ClearMapList
             // 
@@ -446,6 +459,17 @@
             this.button_SearchPDFs.UseVisualStyleBackColor = true;
             this.button_SearchPDFs.Click += new System.EventHandler(this.button_SearchPDFs_Click);
             // 
+            // comboBox_AncGrid
+            // 
+            this.comboBox_AncGrid.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox_AncGrid.FormattingEnabled = true;
+            this.comboBox_AncGrid.Location = new System.Drawing.Point(484, 45);
+            this.comboBox_AncGrid.Name = "comboBox_AncGrid";
+            this.comboBox_AncGrid.Size = new System.Drawing.Size(95, 23);
+            this.comboBox_AncGrid.TabIndex = 0;
+            this.comboBox_AncGrid.Visible = false;
+            this.comboBox_AncGrid.SelectedValueChanged += new System.EventHandler(this.comboBox_AncGrid_SelectedValueChanged);
+            // 
             // comboBox_QueryType
             // 
             this.comboBox_QueryType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -457,6 +481,7 @@
             this.comboBox_QueryType.Name = "comboBox_QueryType";
             this.comboBox_QueryType.Size = new System.Drawing.Size(65, 23);
             this.comboBox_QueryType.TabIndex = 0;
+            this.comboBox_QueryType.SelectedValueChanged += new System.EventHandler(this.comboBox_QueryType_SelectedValueChanged);
             // 
             // comboBox_State
             // 
@@ -517,7 +542,7 @@
             this.tabControl_Login.Location = new System.Drawing.Point(234, 3);
             this.tabControl_Login.Name = "tabControl_Login";
             this.tabControl_Login.SelectedIndex = 0;
-            this.tabControl_Login.Size = new System.Drawing.Size(1000, 686);
+            this.tabControl_Login.Size = new System.Drawing.Size(1000, 696);
             this.tabControl_Login.TabIndex = 6;
             this.tabControl_Login.Visible = false;
             // 
@@ -551,14 +576,14 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(992, 658);
+            this.tabPage3.Size = new System.Drawing.Size(992, 668);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Database Update";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // button_UpdatePDFPath
             // 
-            this.button_UpdatePDFPath.Location = new System.Drawing.Point(906, 611);
+            this.button_UpdatePDFPath.Location = new System.Drawing.Point(902, 591);
             this.button_UpdatePDFPath.Name = "button_UpdatePDFPath";
             this.button_UpdatePDFPath.Size = new System.Drawing.Size(75, 22);
             this.button_UpdatePDFPath.TabIndex = 22;
@@ -568,7 +593,7 @@
             // 
             // button_UpdateKMZPath
             // 
-            this.button_UpdateKMZPath.Location = new System.Drawing.Point(906, 536);
+            this.button_UpdateKMZPath.Location = new System.Drawing.Point(902, 516);
             this.button_UpdateKMZPath.Name = "button_UpdateKMZPath";
             this.button_UpdateKMZPath.Size = new System.Drawing.Size(75, 22);
             this.button_UpdateKMZPath.TabIndex = 21;
@@ -578,7 +603,7 @@
             // 
             // button_UpdateExcelPath
             // 
-            this.button_UpdateExcelPath.Location = new System.Drawing.Point(906, 462);
+            this.button_UpdateExcelPath.Location = new System.Drawing.Point(902, 442);
             this.button_UpdateExcelPath.Name = "button_UpdateExcelPath";
             this.button_UpdateExcelPath.Size = new System.Drawing.Size(75, 22);
             this.button_UpdateExcelPath.TabIndex = 20;
@@ -588,75 +613,72 @@
             // 
             // textBox_NewPDFPath
             // 
-            this.textBox_NewPDFPath.Location = new System.Drawing.Point(518, 611);
+            this.textBox_NewPDFPath.Location = new System.Drawing.Point(514, 591);
             this.textBox_NewPDFPath.Name = "textBox_NewPDFPath";
             this.textBox_NewPDFPath.Size = new System.Drawing.Size(382, 23);
             this.textBox_NewPDFPath.TabIndex = 19;
             // 
             // textBox_NewKMZPath
             // 
-            this.textBox_NewKMZPath.Location = new System.Drawing.Point(518, 536);
+            this.textBox_NewKMZPath.Location = new System.Drawing.Point(514, 516);
             this.textBox_NewKMZPath.Name = "textBox_NewKMZPath";
             this.textBox_NewKMZPath.Size = new System.Drawing.Size(382, 23);
             this.textBox_NewKMZPath.TabIndex = 18;
             // 
             // textBox_NewExcelPath
             // 
-            this.textBox_NewExcelPath.Location = new System.Drawing.Point(518, 462);
+            this.textBox_NewExcelPath.Location = new System.Drawing.Point(514, 442);
             this.textBox_NewExcelPath.Name = "textBox_NewExcelPath";
             this.textBox_NewExcelPath.Size = new System.Drawing.Size(270, 23);
             this.textBox_NewExcelPath.TabIndex = 17;
             // 
             // label_CurrentPDFPath
             // 
-            this.label_CurrentPDFPath.Location = new System.Drawing.Point(234, 597);
+            this.label_CurrentPDFPath.Location = new System.Drawing.Point(230, 577);
             this.label_CurrentPDFPath.Name = "label_CurrentPDFPath";
             this.label_CurrentPDFPath.Size = new System.Drawing.Size(265, 48);
             this.label_CurrentPDFPath.TabIndex = 15;
             // 
             // label_CurrentKMZPath
             // 
-            this.label_CurrentKMZPath.Location = new System.Drawing.Point(234, 522);
+            this.label_CurrentKMZPath.Location = new System.Drawing.Point(230, 502);
             this.label_CurrentKMZPath.Name = "label_CurrentKMZPath";
             this.label_CurrentKMZPath.Size = new System.Drawing.Size(265, 48);
             this.label_CurrentKMZPath.TabIndex = 16;
             // 
             // label_CurrentExcelPath
             // 
-            this.label_CurrentExcelPath.Location = new System.Drawing.Point(234, 448);
+            this.label_CurrentExcelPath.Location = new System.Drawing.Point(230, 428);
             this.label_CurrentExcelPath.Name = "label_CurrentExcelPath";
             this.label_CurrentExcelPath.Size = new System.Drawing.Size(265, 48);
             this.label_CurrentExcelPath.TabIndex = 14;
             // 
             // label_PDFPathMessage
             // 
-            this.label_PDFPathMessage.AutoSize = true;
-            this.label_PDFPathMessage.Location = new System.Drawing.Point(518, 637);
+            this.label_PDFPathMessage.Location = new System.Drawing.Point(514, 617);
             this.label_PDFPathMessage.Name = "label_PDFPathMessage";
-            this.label_PDFPathMessage.Size = new System.Drawing.Size(0, 15);
+            this.label_PDFPathMessage.Size = new System.Drawing.Size(463, 45);
             this.label_PDFPathMessage.TabIndex = 13;
             // 
             // label_KMZPathMessage
             // 
-            this.label_KMZPathMessage.AutoSize = true;
-            this.label_KMZPathMessage.Location = new System.Drawing.Point(518, 562);
+            this.label_KMZPathMessage.Location = new System.Drawing.Point(514, 542);
             this.label_KMZPathMessage.Name = "label_KMZPathMessage";
-            this.label_KMZPathMessage.Size = new System.Drawing.Size(0, 15);
+            this.label_KMZPathMessage.Size = new System.Drawing.Size(463, 46);
             this.label_KMZPathMessage.TabIndex = 12;
             // 
             // label_ExcelPathMessage
             // 
-            this.label_ExcelPathMessage.AutoSize = true;
-            this.label_ExcelPathMessage.Location = new System.Drawing.Point(518, 488);
+            this.label_ExcelPathMessage.Location = new System.Drawing.Point(514, 468);
             this.label_ExcelPathMessage.Name = "label_ExcelPathMessage";
-            this.label_ExcelPathMessage.Size = new System.Drawing.Size(0, 15);
+            this.label_ExcelPathMessage.Size = new System.Drawing.Size(463, 45);
             this.label_ExcelPathMessage.TabIndex = 11;
             // 
             // label13
             // 
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label13.Location = new System.Drawing.Point(234, 423);
+            this.label13.Location = new System.Drawing.Point(230, 403);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(115, 15);
             this.label13.TabIndex = 10;
@@ -666,7 +688,7 @@
             // 
             this.label12.AutoSize = true;
             this.label12.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label12.Location = new System.Drawing.Point(518, 423);
+            this.label12.Location = new System.Drawing.Point(514, 403);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(98, 15);
             this.label12.TabIndex = 9;
@@ -674,7 +696,7 @@
             // 
             // label15
             // 
-            this.label15.Location = new System.Drawing.Point(10, 597);
+            this.label15.Location = new System.Drawing.Point(6, 577);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(184, 48);
             this.label15.TabIndex = 7;
@@ -682,7 +704,7 @@
             // 
             // label11
             // 
-            this.label11.Location = new System.Drawing.Point(10, 522);
+            this.label11.Location = new System.Drawing.Point(6, 502);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(184, 48);
             this.label11.TabIndex = 6;
@@ -691,7 +713,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(794, 465);
+            this.label14.Location = new System.Drawing.Point(790, 445);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(106, 15);
             this.label14.TabIndex = 8;
@@ -699,7 +721,7 @@
             // 
             // label9
             // 
-            this.label9.Location = new System.Drawing.Point(10, 445);
+            this.label9.Location = new System.Drawing.Point(6, 425);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(206, 51);
             this.label9.TabIndex = 5;
@@ -772,7 +794,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(992, 658);
+            this.tabPage4.Size = new System.Drawing.Size(992, 668);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "Missing PDFs";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -933,5 +955,7 @@
         private ComboBox comboBox_QueryType;
         private Label label10;
         private Label label16;
+        private Label label_AncGrid;
+        private ComboBox comboBox_AncGrid;
     }
 }

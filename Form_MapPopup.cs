@@ -43,13 +43,13 @@ namespace dslsa
             depth = ((Form1)f).map_depth;
             year = ((Form1)f).map_year;
 
-            textBox_Report.Text = "Report: " + report;
-            textBox_PN.Text = "Project Number: " + projnum;
-            textBox_ProjName.Text = "Project Name: " + projname;
-            textBox_Client.Text = "Client: " + client;
-            textBox_Type.Text = "Type: " + type;
-            textBox_Depth.Text = "Depth: " + depth;
-            textBox_Year.Text = "Year: " + year;
+            richTextBox_Report.Text = "Report: " + report;
+            richTextBox_PN.Text = "Project Number: " + projnum;
+            richTextBox_ProjName.Text = "Project Name: " + projname;
+            richTextBox_Client.Text = "Client: " + client;
+            richTextBox_Type.Text = "Type: " + type;
+            richTextBox_Depth.Text = "Depth: " + depth;
+            richTextBox_Year.Text = "Year: " + year;
 
             // get pdf folder
             SQLiteCommand cmd_sql;
@@ -70,6 +70,11 @@ namespace dslsa
 
         private void button_OpenPDF_Click(object sender, EventArgs e)
         {
+            label_Message.Text = "Processing...";
+            label_Message.ForeColor = Color.Blue;
+            label_Message.Invalidate();
+            label_Message.Update();
+
             //open the pdf
             using (Process p = new Process())
             {
@@ -113,11 +118,15 @@ namespace dslsa
                 ListViewItem lvi = new ListViewItem(r);
                 ((Form1)f).listView_MapReports.Items.Add(lvi);
             }
-
         }
 
         private void button_EmailPDF_Click(object sender, EventArgs e)
         {
+            label_Message.Text = "Processing...";
+            label_Message.ForeColor = Color.Blue;
+            label_Message.Invalidate();
+            label_Message.Update();
+
             if (!File.Exists(pdffolder + report + ".pdf"))
             {
                 label_Message.Text = "Report " + report + " does not exist in the PDF folder.";
@@ -125,14 +134,16 @@ namespace dslsa
                 return;
             }
 
+            if (Process.GetProcessesByName("outlook").Length == 0)
+            {
+                label_Message.Text = "Please open the Outlook application, then try again.";
+                label_Message.ForeColor = Color.Red;
+                return;
+            }
+
+            //create outlook message
             try
             {
-                //create outlook message
-                if (Process.GetProcessesByName("outlook").Length == 0)
-                {
-                    Process.Start("OutLook.exe");
-                }
-
                 Outlook.Application oApp = new Outlook.Application();
                 Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
 
@@ -150,6 +161,7 @@ namespace dslsa
 
                 label_Message.Text = "Email draft created!";
                 label_Message.ForeColor = Color.Green;
+
             }
             catch (Exception ex)
             {
@@ -160,3 +172,4 @@ namespace dslsa
 
     }
 }
+

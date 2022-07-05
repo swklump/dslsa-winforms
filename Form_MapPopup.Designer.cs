@@ -33,13 +33,13 @@
             this.button_AddToList = new System.Windows.Forms.Button();
             this.label_Message = new System.Windows.Forms.Label();
             this.button_EmailPDF = new System.Windows.Forms.Button();
-            this.textBox_Report = new System.Windows.Forms.TextBox();
-            this.textBox_PN = new System.Windows.Forms.TextBox();
-            this.textBox_ProjName = new System.Windows.Forms.TextBox();
-            this.textBox_Client = new System.Windows.Forms.TextBox();
-            this.textBox_Type = new System.Windows.Forms.TextBox();
-            this.textBox_Depth = new System.Windows.Forms.TextBox();
-            this.textBox_Year = new System.Windows.Forms.TextBox();
+            this.richTextBox_ProjName = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_PN = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_Client = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_Report = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_Type = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_Depth = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_Year = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // button_OpenPDF
@@ -80,102 +80,95 @@
             this.button_EmailPDF.UseVisualStyleBackColor = true;
             this.button_EmailPDF.Click += new System.EventHandler(this.button_EmailPDF_Click);
             // 
-            // textBox_Report
+            // richTextBox_ProjName
             // 
-            this.textBox_Report.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_Report.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_Report.Location = new System.Drawing.Point(17, 12);
-            this.textBox_Report.Multiline = true;
-            this.textBox_Report.Name = "textBox_Report";
-            this.textBox_Report.ReadOnly = true;
-            this.textBox_Report.Size = new System.Drawing.Size(224, 18);
-            this.textBox_Report.TabIndex = 5;
-            this.textBox_Report.Text = "Report: ";
+            this.richTextBox_ProjName.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_ProjName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_ProjName.Location = new System.Drawing.Point(17, 72);
+            this.richTextBox_ProjName.Name = "richTextBox_ProjName";
+            this.richTextBox_ProjName.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_ProjName.Size = new System.Drawing.Size(224, 34);
+            this.richTextBox_ProjName.TabIndex = 6;
+            this.richTextBox_ProjName.Text = "Project Name:";
             // 
-            // textBox_PN
+            // richTextBox_PN
             // 
-            this.textBox_PN.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_PN.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_PN.Location = new System.Drawing.Point(17, 52);
-            this.textBox_PN.Multiline = true;
-            this.textBox_PN.Name = "textBox_PN";
-            this.textBox_PN.ReadOnly = true;
-            this.textBox_PN.Size = new System.Drawing.Size(224, 18);
-            this.textBox_PN.TabIndex = 5;
-            this.textBox_PN.Text = "Project Number:";
+            this.richTextBox_PN.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_PN.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_PN.Location = new System.Drawing.Point(17, 52);
+            this.richTextBox_PN.Name = "richTextBox_PN";
+            this.richTextBox_PN.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_PN.Size = new System.Drawing.Size(224, 18);
+            this.richTextBox_PN.TabIndex = 6;
+            this.richTextBox_PN.Text = "Project Number:";
             // 
-            // textBox_ProjName
+            // richTextBox_Client
             // 
-            this.textBox_ProjName.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_ProjName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_ProjName.Location = new System.Drawing.Point(17, 72);
-            this.textBox_ProjName.Multiline = true;
-            this.textBox_ProjName.Name = "textBox_ProjName";
-            this.textBox_ProjName.ReadOnly = true;
-            this.textBox_ProjName.Size = new System.Drawing.Size(224, 34);
-            this.textBox_ProjName.TabIndex = 5;
-            this.textBox_ProjName.Text = "Project Name:";
+            this.richTextBox_Client.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_Client.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_Client.Location = new System.Drawing.Point(17, 32);
+            this.richTextBox_Client.Name = "richTextBox_Client";
+            this.richTextBox_Client.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_Client.Size = new System.Drawing.Size(224, 18);
+            this.richTextBox_Client.TabIndex = 6;
+            this.richTextBox_Client.Text = "Client:";
             // 
-            // textBox_Client
+            // richTextBox_Report
             // 
-            this.textBox_Client.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_Client.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_Client.Location = new System.Drawing.Point(17, 32);
-            this.textBox_Client.Multiline = true;
-            this.textBox_Client.Name = "textBox_Client";
-            this.textBox_Client.ReadOnly = true;
-            this.textBox_Client.Size = new System.Drawing.Size(224, 18);
-            this.textBox_Client.TabIndex = 5;
-            this.textBox_Client.Text = "Client:";
+            this.richTextBox_Report.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_Report.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_Report.Location = new System.Drawing.Point(17, 12);
+            this.richTextBox_Report.Name = "richTextBox_Report";
+            this.richTextBox_Report.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_Report.Size = new System.Drawing.Size(224, 18);
+            this.richTextBox_Report.TabIndex = 6;
+            this.richTextBox_Report.Text = "Report:";
             // 
-            // textBox_Type
+            // richTextBox_Type
             // 
-            this.textBox_Type.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_Type.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_Type.Location = new System.Drawing.Point(260, 12);
-            this.textBox_Type.Multiline = true;
-            this.textBox_Type.Name = "textBox_Type";
-            this.textBox_Type.ReadOnly = true;
-            this.textBox_Type.Size = new System.Drawing.Size(119, 18);
-            this.textBox_Type.TabIndex = 5;
-            this.textBox_Type.Text = "Type:";
+            this.richTextBox_Type.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_Type.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_Type.Location = new System.Drawing.Point(260, 12);
+            this.richTextBox_Type.Name = "richTextBox_Type";
+            this.richTextBox_Type.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_Type.Size = new System.Drawing.Size(119, 18);
+            this.richTextBox_Type.TabIndex = 6;
+            this.richTextBox_Type.Text = "Type:";
             // 
-            // textBox_Depth
+            // richTextBox_Depth
             // 
-            this.textBox_Depth.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_Depth.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_Depth.Location = new System.Drawing.Point(260, 32);
-            this.textBox_Depth.Multiline = true;
-            this.textBox_Depth.Name = "textBox_Depth";
-            this.textBox_Depth.ReadOnly = true;
-            this.textBox_Depth.Size = new System.Drawing.Size(119, 18);
-            this.textBox_Depth.TabIndex = 5;
-            this.textBox_Depth.Text = "Depth:";
+            this.richTextBox_Depth.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_Depth.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_Depth.Location = new System.Drawing.Point(260, 32);
+            this.richTextBox_Depth.Name = "richTextBox_Depth";
+            this.richTextBox_Depth.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_Depth.Size = new System.Drawing.Size(119, 18);
+            this.richTextBox_Depth.TabIndex = 6;
+            this.richTextBox_Depth.Text = "Depth:";
             // 
-            // textBox_Year
+            // richTextBox_Year
             // 
-            this.textBox_Year.BackColor = System.Drawing.SystemColors.Menu;
-            this.textBox_Year.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_Year.Location = new System.Drawing.Point(260, 52);
-            this.textBox_Year.Multiline = true;
-            this.textBox_Year.Name = "textBox_Year";
-            this.textBox_Year.ReadOnly = true;
-            this.textBox_Year.Size = new System.Drawing.Size(119, 18);
-            this.textBox_Year.TabIndex = 5;
-            this.textBox_Year.Text = "Year:";
+            this.richTextBox_Year.BackColor = System.Drawing.SystemColors.Menu;
+            this.richTextBox_Year.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_Year.Location = new System.Drawing.Point(260, 52);
+            this.richTextBox_Year.Name = "richTextBox_Year";
+            this.richTextBox_Year.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_Year.Size = new System.Drawing.Size(119, 18);
+            this.richTextBox_Year.TabIndex = 6;
+            this.richTextBox_Year.Text = "Year:";
             // 
             // Form_MapPopup
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(411, 182);
-            this.Controls.Add(this.textBox_Client);
-            this.Controls.Add(this.textBox_ProjName);
-            this.Controls.Add(this.textBox_PN);
-            this.Controls.Add(this.textBox_Year);
-            this.Controls.Add(this.textBox_Depth);
-            this.Controls.Add(this.textBox_Type);
-            this.Controls.Add(this.textBox_Report);
+            this.Controls.Add(this.richTextBox_Year);
+            this.Controls.Add(this.richTextBox_Depth);
+            this.Controls.Add(this.richTextBox_Type);
+            this.Controls.Add(this.richTextBox_Report);
+            this.Controls.Add(this.richTextBox_Client);
+            this.Controls.Add(this.richTextBox_PN);
+            this.Controls.Add(this.richTextBox_ProjName);
             this.Controls.Add(this.button_AddToList);
             this.Controls.Add(this.button_EmailPDF);
             this.Controls.Add(this.button_OpenPDF);
@@ -197,12 +190,12 @@
         private Button button_AddToList;
         private Label label_Message;
         private Button button_EmailPDF;
-        private TextBox textBox_Report;
-        private TextBox textBox_PN;
-        private TextBox textBox_ProjName;
-        private TextBox textBox_Client;
-        private TextBox textBox_Type;
-        private TextBox textBox_Depth;
-        private TextBox textBox_Year;
+        private RichTextBox richTextBox_ProjName;
+        private RichTextBox richTextBox_PN;
+        private RichTextBox richTextBox_Client;
+        private RichTextBox richTextBox_Report;
+        private RichTextBox richTextBox_Type;
+        private RichTextBox richTextBox_Depth;
+        private RichTextBox richTextBox_Year;
     }
 }

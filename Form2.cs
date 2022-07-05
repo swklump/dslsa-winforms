@@ -107,10 +107,7 @@ namespace dslsa
                         };
                         p.Start();
                     }
-                    else
-                    {
-                        pdfsnotfound.Add(report);
-                    }
+                    else { pdfsnotfound.Add(report); }
                 }
             }
 
@@ -165,16 +162,21 @@ namespace dslsa
                 {
                     string sourceFile = pdffolder + report + ".pdf";
                     string destFile = folderName + @"\SoilReportPDFs\" + report + ".pdf";
-                    if (File.Exists(pdffolder + report + ".pdf"))
-                    {
-                        File.Copy(sourceFile, destFile, true);
-                    }
-                    else
-                    {
-                        pdfsnotfound.Add(report);
-                    }
+                    if (File.Exists(sourceFile)) { File.Copy(sourceFile, destFile, true); }
+                    else { pdfsnotfound.Add(report); }
                 }
 
+                string message = string.Empty;
+                string reportstring = string.Empty;
+                if (pdfsnotfound.Count == report_nums.Count)
+                {
+                    message = "No PDFs have been saved! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                    reportstring = string.Join(",", pdfsnotfound.ToArray());
+                    textBox_SearchResults.Text = message + reportstring;
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    Directory.Delete(folderName + @"\SoilReportPDFs", true);
+                    return;
+                }
 
                 //zip files
                 try { ZipFile.CreateFromDirectory(folderName + @"\SoilReportPDFs", folderName + @"\SoilReportPDFs.zip"); }
@@ -185,25 +187,17 @@ namespace dslsa
                     textBox_SearchResults.ForeColor = Color.Red;
                     return;
                 }
+                Directory.Delete(folderName + @"\SoilReportPDFs", true);
 
                 //change the label message depending on what reports exist
-                string message = string.Empty;
-                string reportstring = string.Empty;
-                if (pdfsnotfound.Count == report_nums.Count)
+                if (pdfsnotfound.Count == 0)
                 {
-                    message = "No PDFs have been saved! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
-                    reportstring = string.Join(",", pdfsnotfound.ToArray());
-                    textBox_SearchResults.Text = message + reportstring;
-                    textBox_SearchResults.ForeColor = Color.Red;
-                }
-                else if (pdfsnotfound.Count == 0)
-                {
-                    textBox_SearchResults.Text = "All PDFs have been successfully saved in the selected folder!";
+                    textBox_SearchResults.Text = "All PDFs have been successfully saved in the selected folder (look for 'SoilReportPDFs.zip').";
                     textBox_SearchResults.ForeColor = Color.Green;
                 }
                 else
                 {
-                    message = "PDFs have been saved in the selected folder! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                    message = "PDFs have been saved in the selected folder (look for 'SoilReportPDFs.zip'). The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
                     reportstring = string.Join(",", pdfsnotfound.ToArray());
                     textBox_SearchResults.Text = message + reportstring;
                     textBox_SearchResults.ForeColor = Color.Green;
@@ -222,6 +216,9 @@ namespace dslsa
             textBox_SearchResults.ForeColor = Color.Blue;
             textBox_SearchResults.Invalidate();
             textBox_SearchResults.Update();
+            string singlereport = string.Empty;
+            string message = string.Empty;
+            string reportstring = string.Empty;
 
             //create a temp folder
             string tempPath = Path.GetTempPath();
@@ -233,31 +230,47 @@ namespace dslsa
             {
                 string sourceFile = pdffolder + report + ".pdf";
                 string destFile = tempPath + @"\SoilReportPDFs\" + report + ".pdf";
-                try
-                {
-                    File.Copy(sourceFile, destFile, true);
-                }
-                catch (Exception ex)
-                {
-                    pdfsnotfound.Add(report);
-                }
+                if (File.Exists(sourceFile)) { File.Copy(sourceFile, destFile, true); }
+                else { pdfsnotfound.Add(report); }
             }
-            //zip folder
-            try { ZipFile.CreateFromDirectory(tempPath + @"\SoilReportPDFs", tempPath + @"\SoilReportPDFs.zip"); }
-            catch (IOException)
+
+            if (pdfsnotfound.Count == report_nums.Count)
             {
-                textBox_SearchResults.Text = "A folder called 'SoilsReportPDFs' already exists in the directory specified. Please delete the existing folder or select a different directory.";
+                message = "No PDFs have been emailed! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                reportstring = string.Join(",", pdfsnotfound.ToArray());
+                textBox_SearchResults.Text = message + reportstring;
                 textBox_SearchResults.ForeColor = Color.Red;
                 return;
             }
 
+            //zip folder
+            int num_reports_exist = report_nums.Count() - pdfsnotfound.Count();
+            if (num_reports_exist == 1)
+            {
+                singlereport = Directory.GetFiles(tempPath + @"\SoilReportPDFs\", "*.pdf").ToList().ElementAt(0);
+            }
+
+            if (num_reports_exist > 1)
+            {
+                if (File.Exists(tempPath + @"\SoilReportPDFs.zip")) { File.Delete(tempPath + @"\SoilReportPDFs.zip"); }
+                try { ZipFile.CreateFromDirectory(tempPath + @"\SoilReportPDFs", tempPath + @"\SoilReportPDFs.zip"); }
+                catch (IOException)
+                {
+                    textBox_SearchResults.Text = "An error occurred creating a temporary zipped folder. Please try again.";
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    return;
+                }
+            }
+
+            if (Process.GetProcessesByName("outlook").Length == 0)
+            {
+                textBox_SearchResults.Text = "Please open the Outlook application, then try again.";
+                textBox_SearchResults.ForeColor = Color.Red;
+                return;
+            }
             //create outlook message
             try
             {
-                if (Process.GetProcessesByName("outlook").Length == 0)
-                {
-                    Process.Start("OutLook.exe");
-                }
                 Outlook.Application oApp = new Outlook.Application();
                 Outlook.MailItem oMsg = (Outlook.MailItem)oApp.CreateItem(Outlook.OlItemType.olMailItem);
 
@@ -265,25 +278,55 @@ namespace dslsa
                 oMsg.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
                 oMsg.HTMLBody = "Hello,<br/>";
                 oMsg.HTMLBody += "<br/>";
-                oMsg.HTMLBody += "See attached for requested soils report.<br/>";
+                if (num_reports_exist > 1) { oMsg.HTMLBody += "See attached for requested soils reports.<br/>"; }
+                else { oMsg.HTMLBody += "See attached for requested soils report.<br/>"; }
                 oMsg.HTMLBody += "<br/>";
                 oMsg.HTMLBody += "Thanks,";
                 int pos = (int)oMsg.Body.Length + 1;
                 int attachType = (int)Outlook.OlAttachmentType.olByValue;
-                Outlook.Attachment oAttach = oMsg.Attachments.Add(tempPath + @"\SoilReportPDFs.zip", attachType, pos, "SoilReportPDFs.zip");
+                try
+                {
+                    if (num_reports_exist > 1)
+                    {
+                        Outlook.Attachment oAttach = oMsg.Attachments.Add(tempPath + @"\SoilReportPDFs.zip", attachType, pos, "SoilReportPDFs.zip");
+                    }
+                    else { Outlook.Attachment oAttach = oMsg.Attachments.Add(singlereport, attachType, pos, singlereport.Replace(tempPath + @"\SoilReportPDFs\", "")); }
+
+                }
+                catch (Exception)
+                {
+                    textBox_SearchResults.Text = "The attachment size is too big for email. Consider saving the pdfs and uploading to a project folder or sharing a link.";
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    if (Directory.Exists(tempPath + @"\SoilReportPDFs")) { Directory.Delete(tempPath + @"\SoilReportPDFs", true); }
+                    if (File.Exists(tempPath)) { File.Delete(tempPath + @"\SoilReportPDFs.zip"); }
+                    return;
+                }
                 oMsg.Display(false);
 
                 //delete the temp folders
-                Directory.Delete(tempPath + @"\SoilReportPDFs", true);
-                File.Delete(tempPath + @"\SoilReportPDFs.zip");
+                if (Directory.Exists(tempPath + @"\SoilReportPDFs")) { Directory.Delete(tempPath + @"\SoilReportPDFs", true); }
+                if (File.Exists(tempPath)) { File.Delete(tempPath + @"\SoilReportPDFs.zip"); }
 
-                textBox_SearchResults.Text = "Email draft has been successfully opened!";
-                textBox_SearchResults.ForeColor = Color.Green;
+                //change the label message depending on what reports exist
+                if (pdfsnotfound.Count == 0)
+                {
+                    textBox_SearchResults.Text = "All PDFs have been added to the email draft!";
+                    textBox_SearchResults.ForeColor = Color.Green;
+                }
+                else
+                {
+                    message = "PDFs have been added to the email draft! The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                    reportstring = string.Join(",", pdfsnotfound.ToArray());
+                    textBox_SearchResults.Text = message + reportstring;
+                    textBox_SearchResults.ForeColor = Color.Green;
+                }
             }
             catch (Exception ex)
             {
                 textBox_SearchResults.Text = "Email draft could not be created. Restart Outlook and try again.";
                 textBox_SearchResults.ForeColor = Color.Red;
+                Directory.Delete(tempPath + @"\SoilReportPDFs", true);
+                File.Delete(tempPath + @"\SoilReportPDFs.zip");
             }
         }
     }
