@@ -24,8 +24,6 @@ namespace dslsa
         private List<ListViewItem> masterlist_projname;
         private List<ListViewItem> masterlist_county;
         private List<ListViewItem> masterlist_city;
-        private string masteruser = "";
-        private string masterpass = "";
         private string dbpath = @"dslsa_database.db";
         private SQLiteConnection con;
 
@@ -127,11 +125,56 @@ namespace dslsa
             }
             label_DBUpdateTime.Text = "Database last updated on: " + record_datetimeupdate;
             label_KMZDBUpdateTime.Text = "Database last updated on: " + kmz_datetimeupdate;
+
+            //show folder paths for excel, kmz, and pdfs
+            string fname = String.Empty;
+            //get excel report path to display
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='excelpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        fname = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+            label_CurrentExcelPath.Text = fname;
+            //get kmz folder path to display
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        fname = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+            label_CurrentKMZPath.Text = fname;
+            //get pdf folder path to display
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        fname = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+            label_CurrentPDFPath.Text = fname;
+
             con.Close();
 
             comboBox_State.SelectedItem = "Alaska";
             selectedState = "Alaska";
             comboBox_QueryType.SelectedItem = "AND";
+            comboBox_AncGrid.SelectedItem = "";
+            textBox_Results.Text = "";
+
+
+
         }
 
         private void comboBoxState_SelectedValueChanged(object sender, EventArgs e)
@@ -184,6 +227,19 @@ namespace dslsa
                 kvp.Value.RemoveAll(s => s == "");
             }
 
+            List<int> anchoragegrid_ints = new List<int>();
+            //convert anchoragegrid to int
+            if (state == "Alaska")
+            {
+                foreach (string x in dict_cols["anchoragegrid"])
+                {
+                    int y = 0;
+                    if (Int32.TryParse(x, out y)) { anchoragegrid_ints.Add(y); }
+                }
+                anchoragegrid_ints.Sort();
+                anchoragegrid_ints.Remove(0);
+            }
+
             con.Close();
 
             //Add items to master lists and listview ui
@@ -228,12 +284,10 @@ namespace dslsa
             }
             listView_City.EndUpdate();
 
-            //comboBox_AncGrid.BeginUpdate();
             if (state == "Alaska")
             {
-                foreach (string grid in dict_cols["anchoragegrid"]) { comboBox_AncGrid.Items.Add(grid); }
+                foreach (int grid in anchoragegrid_ints) { comboBox_AncGrid.Items.Add(grid); }
             }
-            //comboBox_AncGrid.EndUpdate();
 
             //clear search boxes
             List<TextBox> clearboxes = new List<TextBox>() { textBox_PN, textBox_ProjName, textBox_County, textBox_City };
@@ -246,6 +300,7 @@ namespace dslsa
             List<ListView> items_toclear = new List<ListView>() { listView_PN, listView_ProjName, listView_County, listView_City };
             foreach (ListView listitem in items_toclear) { listitem.SelectedItems.Clear(); }
 
+            textBox_Results.Text = "";
             comboBox_QueryType.SelectedItem = "AND";
 
             gmap.Overlays.Clear();
@@ -439,6 +494,7 @@ namespace dslsa
             string selectedPN = listView_PN.SelectedItems[0].Text.ToString();
             string selectedProjName;
             string selectedCity;
+            string selectedGrid;
 
             try
             {
@@ -453,6 +509,16 @@ namespace dslsa
                 query_whereclause.Add("city='" + selectedCity + "'");
             }
             catch (Exception) { }
+
+            if (state == "Alaska")
+            {
+                try
+                {
+                    selectedGrid = comboBox_AncGrid.Text.ToString();
+                    query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                }
+                catch (Exception) { }
+            }
 
             string query_type = comboBox_QueryType.SelectedItem.ToString();
             string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
@@ -529,6 +595,7 @@ namespace dslsa
             string selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
             string selectedPN;
             string selectedCity;
+            string selectedGrid;
 
             try
             {
@@ -543,6 +610,15 @@ namespace dslsa
                 query_whereclause.Add("city='" + selectedCity + "'");
             }
             catch (Exception) { }
+            if (state == "Alaska")
+            {
+                try
+                {
+                    selectedGrid = comboBox_AncGrid.Text.ToString();
+                    query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                }
+                catch (Exception) { }
+            }
 
             string query_type = comboBox_QueryType.SelectedItem.ToString();
             string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
@@ -663,6 +739,7 @@ namespace dslsa
             string selectedCity = listView_City.SelectedItems[0].Text.ToString();
             string selectedPN;
             string selectedProjName;
+            string selectedGrid;
 
             try
             {
@@ -677,6 +754,15 @@ namespace dslsa
                 query_whereclause.Add("projectname='" + selectedProjName + "'");
             }
             catch (Exception) { }
+            if (state == "Alaska")
+            {
+                try
+                {
+                    selectedGrid = comboBox_AncGrid.Text.ToString();
+                    query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                }
+                catch (Exception) { }
+            }
 
             string query_type = comboBox_QueryType.SelectedItem.ToString();
             string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
@@ -745,7 +831,111 @@ namespace dslsa
 
         private void comboBox_AncGrid_SelectedValueChanged(object sender, EventArgs e)
         {
+            gmap.Overlays.Clear();
+            marker_list.Clear();
+            string state = comboBox_State.SelectedItem.ToString();
 
+            //build the where clause based on all selections
+            List<string> query_whereclause = new List<string>();
+            string selectedPN;
+            string selectedProjName;
+            string selectedCity;
+            string selectedGrid;
+
+            try
+            {
+                selectedPN = listView_PN.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectnumber='" + selectedPN + "'");
+            }
+            catch (Exception) { }
+            try
+            {
+                selectedProjName = listView_ProjName.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("projectname='" + selectedProjName + "'");
+            }
+            catch (Exception) { }
+
+            try
+            {
+                selectedCity = listView_City.SelectedItems[0].Text.ToString();
+                query_whereclause.Add("city='" + selectedCity + "'");
+            }
+            catch (Exception) { }
+
+            if (state == "Alaska")
+            {
+                try
+                {
+                    selectedGrid = comboBox_AncGrid.Text.ToString();
+                    if (selectedGrid != "") { query_whereclause.Add("anchoragegrid='" + selectedGrid + "'"); }
+                }
+                catch (Exception) { }
+            }
+
+            if (query_whereclause.Count() == 0)
+            {
+                try
+                {
+                    gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                    gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+                }
+                catch (Exception ex) { }
+                return;
+            }
+            string query_type = comboBox_QueryType.SelectedItem.ToString();
+            string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
+
+            //reset marker dict
+            pointDict.Clear();
+            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "lat", "lon", "type", "depth", "year" };
+            foreach (string k in pointdictkeys) { pointDict.Add(k, new List<string>()); }
+
+            //setup database connection
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+            string sql;
+
+            //get markers
+            sql = "SELECT report,projectnumber,projectname,client,lat,lon,type,depth,year FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        foreach (KeyValuePair<string, List<string>> kvp in pointDict) { pointDict[kvp.Key].Add(Convert.ToString(rdr[kvp.Key])); }
+                    }
+                }
+            }
+
+            //check if any markers found
+            if (pointDict["lat"].Count() == 0)
+            {
+                textBox_Results.Text = "No georeferencing exists for this selection.";
+                textBox_Results.ForeColor = Color.Red;
+                try
+                {
+                    gmap.Position = new PointLatLng(state_centerpoint_dict[state.ToLower()][0], state_centerpoint_dict[state.ToLower()][1]);
+                    gmap.Zoom = state_centerpoint_dict[state.ToLower()][2];
+                }
+                catch (Exception ex) { }
+                return;
+            }
+            textBox_Results.Text = "";
+
+            // add markers
+            GMapOverlay markers = new GMapOverlay("markers");
+            for (int i = 0; i < pointDict["lat"].Count(); i++)
+            {
+                GMapMarker marker =
+                    new GMarkerGoogle(
+                        new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
+                        GMarkerGoogleType.blue_pushpin);
+                markers.Markers.Add(marker);
+                marker_list.Add(marker);
+            }
+            gmap.Overlays.Add(markers);
+            gmap.ZoomAndCenterMarkers("markers");
         }
 
         private void listView_MapReports_DoubleClick(object sender, EventArgs e)
@@ -774,6 +964,12 @@ namespace dslsa
 
             report_nums = map_report_list;
 
+            //if popup form is open, close it
+            if (Application.OpenForms.OfType<Form_MapPopup>().Any())
+            {
+                Application.OpenForms.OfType<Form_MapPopup>().First().Close();
+            }
+
             //open the search results form
             this.Hide();
             Form2 s = new Form2();
@@ -783,69 +979,6 @@ namespace dslsa
 
 
         //ADMIN TAB METHODS.....................................................................
-        private void buttonLogin_Click(object sender, EventArgs e)
-        {
-            String username = textBox_Username.Text;
-            String password = textBox_Password.Text;
-
-            //if login credentials match
-            if (username == masteruser && password == masterpass)
-            {
-                tabControl_Login.Visible = true;
-                label_LoginMessage.Text = "Login successful!";
-                label_LoginMessage.ForeColor = Color.Green;
-
-                //setup database connection
-                SQLiteCommand cmd_sql;
-                SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
-                con.Open();
-                string fname = String.Empty;
-                //get excel report path to display
-                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='excelpath'", con))
-                {
-                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
-                    {
-                        while (rdr.Read())
-                        {
-                            fname = Convert.ToString(rdr["value"]);
-                        }
-                    }
-                }
-                label_CurrentExcelPath.Text = fname;
-                //get kmz folder path to display
-                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
-                {
-                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
-                    {
-                        while (rdr.Read())
-                        {
-                            fname = Convert.ToString(rdr["value"]);
-                        }
-                    }
-                }
-                label_CurrentKMZPath.Text = fname;
-                //get pdf folder path to display
-                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
-                {
-                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
-                    {
-                        while (rdr.Read())
-                        {
-                            fname = Convert.ToString(rdr["value"]);
-                        }
-                    }
-                }
-                label_CurrentPDFPath.Text = fname;
-
-            }
-            else
-            {
-                label_LoginMessage.Text = "Login unsuccessful! Please try again.";
-                label_LoginMessage.ForeColor = Color.Red;
-                tabControl_Login.Visible = false;
-            }
-
-        }
 
         private void button_UpdateExcelPath_Click(object sender, EventArgs e)
         {
@@ -905,8 +1038,16 @@ namespace dslsa
                 con.Close();
                 return;
             }
-
+            try { ancfiles = Directory.GetFiles(newpath + @"\Alaska\Anchorage" + @"\", "*").ToList(); }
+            catch (Exception ex)
+            {
+                label_KMZPathMessage.Text = "The specifed folder is not correct. Please select the folder with state subdirectories and associated redfile KMZs.";
+                label_KMZPathMessage.ForeColor = Color.Red;
+                con.Close();
+                return;
+            }
             bool filefound = false;
+
             foreach (string ancfile in ancfiles)
             {
                 string filename = ancfile.Replace(newpath + @"\Alaska\Anchorage" + @"\", "").ToLower();
@@ -1070,7 +1211,7 @@ namespace dslsa
                                 if (state == "ALASKA")
                                 {
                                     sql = "CREATE TABLE IF NOT EXISTS ALASKA(" +
-                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255)" +
+                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid INT" +
                                         ")";
                                 }
                                 else
@@ -1239,7 +1380,7 @@ namespace dslsa
 
             catch (Exception)
             {
-                label_UpdateRecordDB.Text = "There was an error updating the database. Please verify the soils report record excel file exists in the folder entered in the Folder Paths tab.";
+                label_UpdateRecordDB.Text = "There was an error updating the database. Please verify the soils report record excel file exists in the folder entered in the Folder Paths tab. Make sure no columns have moved in the Excel file and that all tabs have state names spelled out.";
                 label_UpdateRecordDB.ForeColor = Color.Red;
                 return;
             }
@@ -1413,21 +1554,20 @@ namespace dslsa
                                                             searchstring = "<td>date</td>";
                                                         }
                                                     }
-
-                                                    startindex = desc.IndexOf(searchstring) + searchstring.Length;
-                                                    endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
-                                                    dummyvar = desc.Substring(startindex, endindex - startindex);
-
-                                                    if (s == "file") { pointDict["report"] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
-                                                    else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
                                                 }
+                                                startindex = desc.IndexOf(searchstring) + searchstring.Length;
+                                                endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
+                                                dummyvar = desc.Substring(startindex, endindex - startindex);
 
-                                                cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth,year) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"], pointDict["year"]);
-                                                cmd.ExecuteNonQuery();
+                                                if (s == "file") { pointDict["report"] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
+                                                else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
                                             }
-                                        }
 
+                                            cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth,year) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"], pointDict["year"]);
+                                            cmd.ExecuteNonQuery();
+                                        }
                                     }
+
                                 }
                                 catch (Exception)
                                 {
@@ -1472,10 +1612,10 @@ namespace dslsa
                         cmd_sql.ExecuteNonQuery();
                         //}
                     }
-                    //drop kmz table
-                    sql = "DROP TABLE KMZ";
-                    cmd_sql = new SQLiteCommand(sql, con);
-                    cmd_sql.ExecuteNonQuery();
+                    ////drop kmz table
+                    //sql = "DROP TABLE KMZ";
+                    //cmd_sql = new SQLiteCommand(sql, con);
+                    //cmd_sql.ExecuteNonQuery();
                 }
 
                 //reset datetime of update
@@ -1498,9 +1638,6 @@ namespace dslsa
                 label_UpdateKMZDB.ForeColor = Color.Red;
                 return;
             }
-
-
-
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -1512,19 +1649,6 @@ namespace dslsa
             textBox_NewExcelPath.Text = "";
             textBox_NewKMZPath.Text = "";
             textBox_NewPDFPath.Text = "";
-
-            //change accept button based on tab selected
-            TabControl tab = sender as TabControl;
-
-            switch (tab.SelectedIndex)
-            {
-                case 1:
-                    AcceptButton = button_Login;
-                    break;
-                case 0:
-                    AcceptButton = button_SearchPDFs;
-                    break;
-            }
 
         }
 
