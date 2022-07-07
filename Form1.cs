@@ -1205,8 +1205,6 @@ namespace dslsa
                                 dtResult = ds.Tables["excelData"];
                                 objConn.Close();
 
-                                state = sheetName.Substring(0, sheetName.Length - 1).ToUpper();
-
                                 //create database table, diff columns for alaska
                                 if (state == "ALASKA")
                                 {
@@ -1374,6 +1372,7 @@ namespace dslsa
                     label_UpdateRecordDB.ForeColor = Color.Green;
                     label_UpdateRecordDB.Invalidate();
                     label_UpdateRecordDB.Update();
+                    objConn.Close();
                 }
 
             }
@@ -1465,46 +1464,40 @@ namespace dslsa
             int startindex;
             int endindex;
             string state_name;
-            //get kmz file names
-            //loop through each state folder in the kmz path
-            List<string> directories_states = Directory.GetDirectories(fname).ToList();
+            XNamespace ns = "http://www.opengis.net/kml/2.2";
 
             try
             {
-                foreach (string dir_state in directories_states)
-                {
-                    List<string> final_files = new List<string>();
-                    state_name = dir_state.Replace(fname + @"\", "").ToUpper();
+                //first get kmz data for alaska
+                List<string> ak_final_files = new List<string>();
 
-                    //loop through each city folder in the state folder
-                    List<string> directories_cities = Directory.GetDirectories(dir_state).ToList();
-                    foreach (string dir_city in directories_cities)
+                //create database table
+                sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT)";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                //loop through each city folder in the state folder
+                List<string> directories_cities = Directory.GetDirectories(fname + @"\Alaska\").ToList();
+                foreach (string dir_city in directories_cities)
+                {
+                    //loop through each kmz file in the city folder
+                    List<string> kmz_files = Directory.GetFiles(dir_city, "*.kmz").ToList();
+                    foreach (string kmz_file in kmz_files)
                     {
-                        //loop through each kmz file in the city folder
-                        List<string> kmz_files = Directory.GetFiles(dir_city, "*.kmz").ToList();
-                        foreach (string kmz_file in kmz_files)
+                        string filename = kmz_file.Replace(dir_city + @"\", "").ToLower();
+                        if (filename.Contains("redfile") && !filename.Contains("project"))
                         {
-                            string filename = kmz_file.Replace(dir_city + @"\", "").ToLower();
-                            if (filename.Contains("redfiles") && !filename.Contains("project"))
-                            {
-                                final_files.Add(kmz_file);
-                            }
+                            ak_final_files.Add(kmz_file);
                         }
                     }
+                }
 
-                    if (final_files.Count() == 0) { continue; }
-
-                    XNamespace ns = "http://www.opengis.net/kml/2.2";
-
-                    //create database table
-                    sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT)";
-                    cmd_sql = new SQLiteCommand(sql, con);
-                    cmd_sql.ExecuteNonQuery();
-
-                    //loop through each file and parse kmz
-                    foreach (string file in final_files)
+                //loop through each file and parse kmz
+                foreach (string file in ak_final_files)
+                {
+                    using (var cmd = new SQLiteCommand(con))
                     {
-                        using (var cmd = new SQLiteCommand(con))
+                        try
                         {
                             using (var transaction = con.BeginTransaction())
                             {
@@ -1512,112 +1505,204 @@ namespace dslsa
                                 label_UpdateKMZDB.ForeColor = Color.Blue;
                                 label_UpdateKMZDB.Invalidate();
                                 label_UpdateKMZDB.Update();
-                                try
+
+                                var file_open = File.OpenRead(file);
+                                var zip = new ZipArchive(file_open, ZipArchiveMode.Read);
+                                var stream = zip.GetEntry("doc.kml").Open();
+                                XDocument xDoc = XDocument.Load(stream);
+
+                                if (xDoc != null)
                                 {
-                                    var file_open = File.OpenRead(file);
-                                    var zip = new ZipArchive(file_open, ZipArchiveMode.Read);
-                                    var stream = zip.GetEntry("doc.kml").Open();
-                                    XDocument xDoc = XDocument.Load(stream);
+                                    var placemarks = xDoc.Root.Element(ns + "Document").Element(ns + "Folder").Elements(ns + "Placemark");
 
-                                    if (xDoc != null)
+                                    foreach (var place in placemarks)
                                     {
-                                        var placemarks = xDoc.Root.Element(ns + "Document").Element(ns + "Folder").Elements(ns + "Placemark");
-                                        foreach (var place in placemarks)
+                                        IDictionary<string, string> pointDict = new Dictionary<string, string>();
+                                        List<string> dictkeys = new List<string>() { "report", "lat", "lon", "type", "depth", "year" };
+                                        foreach (string key in dictkeys) { pointDict.Add(key, ""); }
+
+                                        //get lat lons
+                                        var coords = place.Element(ns + "Point").Element(ns + "coordinates").Value;
+                                        coords = coords.Substring(0, coords.LastIndexOf(','));
+                                        pointDict["lon"] = coords.Substring(0, coords.IndexOf(','));
+                                        pointDict["lat"] = coords.Substring(coords.IndexOf(',') + 1);
+
+                                        var desc = place.Element(ns + "description").Value.ToLower();
+
+                                        //get file(report), type, depth, year
+                                        string dummyvar;
+                                        List<string> searchstrings = new List<string>() { "file", "type", "depth", "year" };
+                                        foreach (string s in searchstrings)
                                         {
-                                            IDictionary<string, string> pointDict = new Dictionary<string, string>();
-                                            List<string> dictkeys = new List<string>() { "report", "lat", "lon", "type", "depth", "year" };
-                                            foreach (string key in dictkeys) { pointDict.Add(key, ""); }
-
-                                            //get lat lons
-                                            var coords = place.Element(ns + "Point").Element(ns + "coordinates").Value;
-                                            coords = coords.Substring(0, coords.LastIndexOf(','));
-                                            pointDict["lon"] = coords.Substring(0, coords.IndexOf(','));
-                                            pointDict["lat"] = coords.Substring(coords.IndexOf(',') + 1);
-
-                                            var desc = place.Element(ns + "description").Value.ToLower();
-
-                                            //get file(report), type, depth, year
-                                            string dummyvar;
-                                            List<string> searchstrings = new List<string>() { "file", "type", "depth", "year" };
-                                            foreach (string s in searchstrings)
+                                            searchstring = string.Format("<td>{0}</td>", s);
+                                            if (s == "file" && desc.IndexOf(searchstring) == -1) { searchstring = "<td>redfile</td>"; }
+                                            else if (s == "year" && desc.IndexOf(searchstring) == -1)
                                             {
-                                                searchstring = string.Format("<td>{0}</td>", s);
-                                                if (s == "file" && desc.IndexOf(searchstring) == -1) { searchstring = "<td>redfile</td>"; }
-                                                else if (s == "year" && desc.IndexOf(searchstring) == -1)
+                                                searchstring = "<td>rptyear</td>";
+                                                if (desc.IndexOf(searchstring) == -1)
                                                 {
-                                                    searchstring = "<td>rptyear</td>";
+                                                    searchstring = "<td>reportyear</td>";
                                                     if (desc.IndexOf(searchstring) == -1)
                                                     {
-                                                        searchstring = "<td>reportyear</td>";
-                                                        if (desc.IndexOf(searchstring) == -1)
-                                                        {
-                                                            searchstring = "<td>date</td>";
-                                                        }
+                                                        searchstring = "<td>date</td>";
                                                     }
                                                 }
-                                                startindex = desc.IndexOf(searchstring) + searchstring.Length;
-                                                endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
-                                                dummyvar = desc.Substring(startindex, endindex - startindex);
-
-                                                if (s == "file") { pointDict["report"] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
-                                                else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
                                             }
 
-                                            cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth,year) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"], pointDict["year"]);
-                                            cmd.ExecuteNonQuery();
-                                        }
-                                    }
+                                            startindex = desc.IndexOf(searchstring) + searchstring.Length;
+                                            endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
+                                            dummyvar = desc.Substring(startindex, endindex - startindex);
 
+                                            if (s == "file") { pointDict["report"] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
+                                            else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
+                                        }
+
+                                        cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth,year) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"], pointDict["year"]);
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                    transaction.Commit();
+                                }
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            label_UpdateKMZDB.Text = "Error parsing data from " + file + ". Please verify the attribute names in this file match those of the other KMZs.";
+                            label_UpdateKMZDB.ForeColor = Color.Red;
+                            label_UpdateRecordDB.Invalidate();
+                            label_UpdateRecordDB.Update();
+                            return;
+                        }
+                    }
+                }
+
+
+                //create the join table
+                sql = "CREATE TABLE IF NOT EXISTS ALASKAKMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255))";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                sql = "INSERT INTO ALASKAKMZ SELECT KMZ.report, lat, lon, type, depth, year, projectnumber, client, projectname, area, city, anchoragegrid FROM KMZ " +
+                    "LEFT JOIN ALASKA " +
+                    "ON (KMZ.report=ALASKA.report)";
+
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                //drop kmz table
+                sql = "DROP TABLE KMZ";
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+
+
+                //now parse the Excel for the other states
+                fname = @"C:\Users\klump\OneDrive\Programming\Soils Report Lat Lons.xlsx";
+                using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
+                {
+                    DataTable dtResult = null;
+                    int totalSheet = 0;
+                    objConn.Open();
+                    OleDbCommand cmd = new OleDbCommand();
+                    OleDbDataAdapter oleda = new OleDbDataAdapter();
+                    DataSet ds;
+                    DataTable dt = objConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+
+                    string sheetName = string.Empty;
+                    string state = string.Empty;
+
+                    if (dt != null)
+                    {
+                        foreach (DataRow drs in dt.Rows)
+                        {
+                            //create database table
+                            sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT)";
+                            cmd_sql = new SQLiteCommand(sql, con);
+                            cmd_sql.ExecuteNonQuery();
+
+                            //get data from spreadsheet
+                            sheetName = drs["TABLE_NAME"].ToString();
+                            if (!sheetName.Contains("FilterDatabase"))
+                            {
+                                state = sheetName.Substring(0, sheetName.Length - 1).ToUpper();
+
+                                label_UpdateKMZDB.Text = labelmessageintro + "\n" + string.Format("Parsing {0}...", state);
+                                label_UpdateKMZDB.ForeColor = Color.Blue;
+                                label_UpdateKMZDB.Invalidate();
+                                label_UpdateKMZDB.Update();
+
+                                var tempDataTable = (from dataRow in dt.AsEnumerable()
+                                                     where !dataRow["TABLE_NAME"].ToString().Contains("FilterDatabase")
+                                                     select dataRow).CopyToDataTable();
+                                dt = tempDataTable;
+                                totalSheet = dt.Rows.Count;
+
+                                //get all data from sheet
+                                cmd.Connection = objConn;
+                                cmd.CommandType = CommandType.Text;
+                                cmd.CommandText = "SELECT * FROM [" + sheetName + "]";
+                                oleda = new OleDbDataAdapter(cmd);
+
+                                //send data to a datatable
+                                ds = new DataSet();
+                                oleda.Fill(ds, "excelData");
+                                dtResult = ds.Tables["excelData"];
+                                objConn.Close();
+
+                                //other states
+                                using (cmd_sql = new SQLiteCommand(con))
+                                {
+                                    using (var transaction = con.BeginTransaction())
+                                    {
+                                        foreach (DataRow dataRow in dtResult.Rows)
+                                        {
+                                            cmd_sql.CommandText = "INSERT INTO KMZ(report,lat,lon,type,depth) VALUES (";
+                                            for (int i = 0; i < 5; i++)
+                                            {
+                                                if (i == 4)
+                                                {
+                                                    cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "'";
+                                                }
+                                                else
+                                                {
+                                                    cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "',";
+                                                }
+                                            }
+                                            cmd_sql.CommandText = cmd_sql.CommandText + ")";
+                                            cmd_sql.ExecuteNonQuery();
+                                        }
+                                        transaction.Commit();
+                                    }
+                                }
+                                //create the join table
+                                sql = String.Format("CREATE TABLE IF NOT EXISTS {0}KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255))", state);
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
+                                try
+                                {
+                                    sql = String.Format("INSERT INTO {0}KMZ SELECT KMZ.report, lat, lon, type, depth, year, projectnumber, client, projectname, city FROM KMZ " +
+                                        "LEFT JOIN {0} " +
+                                        "ON (KMZ.report={0}.report)", state);
+
+                                    cmd_sql = new SQLiteCommand(sql, con);
+                                    cmd_sql.ExecuteNonQuery();
                                 }
                                 catch (Exception)
                                 {
-                                    label_UpdateKMZDB.Text = file;
-                                    label_UpdateKMZDB.ForeColor = Color.Green;
-                                    label_UpdateRecordDB.Invalidate();
-                                    label_UpdateRecordDB.Update();
+                                    label_UpdateKMZDB.Text = String.Format("A table for {0} cannot be found. Add a tab for {0} and fill in data for it in the Soils Report Record spreadsheet, update the Record database (button above on this page), then try again.", state);
+                                    label_UpdateKMZDB.ForeColor = Color.Red;
                                     return;
                                 }
-                                transaction.Commit();
+
+                                //drop kmz table
+                                sql = "DROP TABLE KMZ";
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
                             }
                         }
                     }
-
-                    //create a join table with record columns
-                    if (state_name == "ALASKA")
-                    {
-                        //create the join table
-                        sql = "CREATE TABLE IF NOT EXISTS ALASKAKMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255))";
-                        cmd_sql = new SQLiteCommand(sql, con);
-                        cmd_sql.ExecuteNonQuery();
-
-                        sql = "INSERT INTO ALASKAKMZ SELECT KMZ.report, lat, lon, type, depth, year, projectnumber, client, projectname, area, city, anchoragegrid FROM KMZ " +
-                            "LEFT JOIN ALASKA " +
-                            "ON (KMZ.report=ALASKA.report)";
-
-                        cmd_sql = new SQLiteCommand(sql, con);
-                        cmd_sql.ExecuteNonQuery();
-                    }
-                    else
-                    {
-                        //create the join table
-                        sql = "CREATE TABLE IF NOT EXISTS " + state_name + "KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255))";
-                        cmd_sql = new SQLiteCommand(sql, con);
-                        cmd_sql.ExecuteNonQuery();
-
-                        sql = "INSERT INTO " + state_name + "KMZ SELECT KMZ.report, lat, lon, type, depth, year, projectnumber, client, projectname, city FROM KMZ " +
-                            "LEFT JOIN " + state_name + " " +
-                            "ON (KMZ.report=" + state_name + ".report)";
-
-                        cmd_sql = new SQLiteCommand(sql, con);
-                        cmd_sql.ExecuteNonQuery();
-                        //}
-                    }
-                    ////drop kmz table
-                    //sql = "DROP TABLE KMZ";
-                    //cmd_sql = new SQLiteCommand(sql, con);
-                    //cmd_sql.ExecuteNonQuery();
                 }
-
                 //reset datetime of update
                 DateTime now = DateTime.Now;
                 sql = "DELETE FROM FOLDERPATHS WHERE type='kmz_update_datetime'";
@@ -1627,7 +1712,6 @@ namespace dslsa
                 cmd_sql = new SQLiteCommand(sql, con);
                 cmd_sql.ExecuteNonQuery();
                 label_KMZDBUpdateTime.Text = "Database last updated on: " + now;
-
 
                 label_UpdateKMZDB.Text = "Upload complete!";
                 label_UpdateKMZDB.ForeColor = Color.Green;
