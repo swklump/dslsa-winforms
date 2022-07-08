@@ -86,6 +86,7 @@
             this.richTextBox_ProjName.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_ProjName.Location = new System.Drawing.Point(17, 72);
             this.richTextBox_ProjName.Name = "richTextBox_ProjName";
+            this.richTextBox_ProjName.ReadOnly = true;
             this.richTextBox_ProjName.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_ProjName.Size = new System.Drawing.Size(224, 34);
             this.richTextBox_ProjName.TabIndex = 6;
@@ -97,6 +98,7 @@
             this.richTextBox_PN.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_PN.Location = new System.Drawing.Point(17, 52);
             this.richTextBox_PN.Name = "richTextBox_PN";
+            this.richTextBox_PN.ReadOnly = true;
             this.richTextBox_PN.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_PN.Size = new System.Drawing.Size(224, 18);
             this.richTextBox_PN.TabIndex = 6;
@@ -108,6 +110,7 @@
             this.richTextBox_Client.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_Client.Location = new System.Drawing.Point(17, 32);
             this.richTextBox_Client.Name = "richTextBox_Client";
+            this.richTextBox_Client.ReadOnly = true;
             this.richTextBox_Client.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_Client.Size = new System.Drawing.Size(224, 18);
             this.richTextBox_Client.TabIndex = 6;
@@ -119,6 +122,7 @@
             this.richTextBox_Report.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_Report.Location = new System.Drawing.Point(17, 12);
             this.richTextBox_Report.Name = "richTextBox_Report";
+            this.richTextBox_Report.ReadOnly = true;
             this.richTextBox_Report.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_Report.Size = new System.Drawing.Size(224, 18);
             this.richTextBox_Report.TabIndex = 6;
@@ -130,6 +134,7 @@
             this.richTextBox_Type.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_Type.Location = new System.Drawing.Point(260, 12);
             this.richTextBox_Type.Name = "richTextBox_Type";
+            this.richTextBox_Type.ReadOnly = true;
             this.richTextBox_Type.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_Type.Size = new System.Drawing.Size(119, 18);
             this.richTextBox_Type.TabIndex = 6;
@@ -141,6 +146,7 @@
             this.richTextBox_Depth.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_Depth.Location = new System.Drawing.Point(260, 32);
             this.richTextBox_Depth.Name = "richTextBox_Depth";
+            this.richTextBox_Depth.ReadOnly = true;
             this.richTextBox_Depth.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_Depth.Size = new System.Drawing.Size(119, 18);
             this.richTextBox_Depth.TabIndex = 6;
@@ -152,6 +158,7 @@
             this.richTextBox_Year.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox_Year.Location = new System.Drawing.Point(260, 52);
             this.richTextBox_Year.Name = "richTextBox_Year";
+            this.richTextBox_Year.ReadOnly = true;
             this.richTextBox_Year.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.richTextBox_Year.Size = new System.Drawing.Size(119, 18);
             this.richTextBox_Year.TabIndex = 6;

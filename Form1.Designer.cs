@@ -72,23 +72,28 @@
             this.tabControl_Login = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.richTextBox_CurrentLatLonPath = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_CurrentPDFPath = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_CurrentKMZPath = new System.Windows.Forms.RichTextBox();
+            this.richTextBox_CurrentExcelPath = new System.Windows.Forms.RichTextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.label_CurrentExcelPath = new System.Windows.Forms.Label();
+            this.label_LatLonPathMessage = new System.Windows.Forms.Label();
             this.label_PDFPathMessage = new System.Windows.Forms.Label();
+            this.button_UpdateLatLonPath = new System.Windows.Forms.Button();
             this.button_UpdatePDFPath = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
+            this.textBox_NewLatLonPath = new System.Windows.Forms.TextBox();
             this.textBox_NewPDFPath = new System.Windows.Forms.TextBox();
             this.button_UpdateKMZPath = new System.Windows.Forms.Button();
-            this.label_CurrentPDFPath = new System.Windows.Forms.Label();
             this.textBox_NewExcelPath = new System.Windows.Forms.TextBox();
             this.button_UpdateExcelPath = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label_KMZPathMessage = new System.Windows.Forms.Label();
             this.textBox_NewKMZPath = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label_ExcelPathMessage = new System.Windows.Forms.Label();
-            this.label_CurrentKMZPath = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
             this.label_KMZDBUpdateTime = new System.Windows.Forms.Label();
@@ -613,7 +618,7 @@
             this.tabControl_Login.Location = new System.Drawing.Point(3, 6);
             this.tabControl_Login.Name = "tabControl_Login";
             this.tabControl_Login.SelectedIndex = 0;
-            this.tabControl_Login.Size = new System.Drawing.Size(1232, 639);
+            this.tabControl_Login.Size = new System.Drawing.Size(1232, 643);
             this.tabControl_Login.TabIndex = 6;
             // 
             // tabPage3
@@ -624,7 +629,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1224, 611);
+            this.tabPage3.Size = new System.Drawing.Size(1224, 615);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Database Update";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -634,32 +639,85 @@
             this.panel8.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel8.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panel8.Controls.Add(this.richTextBox_CurrentLatLonPath);
+            this.panel8.Controls.Add(this.richTextBox_CurrentPDFPath);
+            this.panel8.Controls.Add(this.richTextBox_CurrentKMZPath);
+            this.panel8.Controls.Add(this.richTextBox_CurrentExcelPath);
             this.panel8.Controls.Add(this.label9);
             this.panel8.Controls.Add(this.label13);
-            this.panel8.Controls.Add(this.label_CurrentExcelPath);
+            this.panel8.Controls.Add(this.label_LatLonPathMessage);
             this.panel8.Controls.Add(this.label_PDFPathMessage);
+            this.panel8.Controls.Add(this.button_UpdateLatLonPath);
             this.panel8.Controls.Add(this.button_UpdatePDFPath);
             this.panel8.Controls.Add(this.label12);
+            this.panel8.Controls.Add(this.textBox_NewLatLonPath);
             this.panel8.Controls.Add(this.textBox_NewPDFPath);
             this.panel8.Controls.Add(this.button_UpdateKMZPath);
-            this.panel8.Controls.Add(this.label_CurrentPDFPath);
             this.panel8.Controls.Add(this.textBox_NewExcelPath);
             this.panel8.Controls.Add(this.button_UpdateExcelPath);
+            this.panel8.Controls.Add(this.label6);
             this.panel8.Controls.Add(this.label15);
             this.panel8.Controls.Add(this.label_KMZPathMessage);
             this.panel8.Controls.Add(this.textBox_NewKMZPath);
             this.panel8.Controls.Add(this.label14);
             this.panel8.Controls.Add(this.label_ExcelPathMessage);
-            this.panel8.Controls.Add(this.label_CurrentKMZPath);
             this.panel8.Controls.Add(this.label11);
-            this.panel8.Location = new System.Drawing.Point(-1, 350);
+            this.panel8.Location = new System.Drawing.Point(0, 296);
             this.panel8.Name = "panel8";
-            this.panel8.Size = new System.Drawing.Size(1225, 262);
+            this.panel8.Size = new System.Drawing.Size(1225, 327);
             this.panel8.TabIndex = 25;
+            // 
+            // richTextBox_CurrentLatLonPath
+            // 
+            this.richTextBox_CurrentLatLonPath.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.richTextBox_CurrentLatLonPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_CurrentLatLonPath.Location = new System.Drawing.Point(231, 246);
+            this.richTextBox_CurrentLatLonPath.Name = "richTextBox_CurrentLatLonPath";
+            this.richTextBox_CurrentLatLonPath.ReadOnly = true;
+            this.richTextBox_CurrentLatLonPath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_CurrentLatLonPath.Size = new System.Drawing.Size(265, 48);
+            this.richTextBox_CurrentLatLonPath.TabIndex = 23;
+            this.richTextBox_CurrentLatLonPath.Text = "";
+            // 
+            // richTextBox_CurrentPDFPath
+            // 
+            this.richTextBox_CurrentPDFPath.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.richTextBox_CurrentPDFPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_CurrentPDFPath.Location = new System.Drawing.Point(224, 178);
+            this.richTextBox_CurrentPDFPath.Name = "richTextBox_CurrentPDFPath";
+            this.richTextBox_CurrentPDFPath.ReadOnly = true;
+            this.richTextBox_CurrentPDFPath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_CurrentPDFPath.Size = new System.Drawing.Size(265, 48);
+            this.richTextBox_CurrentPDFPath.TabIndex = 23;
+            this.richTextBox_CurrentPDFPath.Text = "";
+            // 
+            // richTextBox_CurrentKMZPath
+            // 
+            this.richTextBox_CurrentKMZPath.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.richTextBox_CurrentKMZPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_CurrentKMZPath.Location = new System.Drawing.Point(224, 110);
+            this.richTextBox_CurrentKMZPath.Name = "richTextBox_CurrentKMZPath";
+            this.richTextBox_CurrentKMZPath.ReadOnly = true;
+            this.richTextBox_CurrentKMZPath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_CurrentKMZPath.Size = new System.Drawing.Size(265, 48);
+            this.richTextBox_CurrentKMZPath.TabIndex = 23;
+            this.richTextBox_CurrentKMZPath.Text = "";
+            // 
+            // richTextBox_CurrentExcelPath
+            // 
+            this.richTextBox_CurrentExcelPath.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.richTextBox_CurrentExcelPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox_CurrentExcelPath.Location = new System.Drawing.Point(224, 43);
+            this.richTextBox_CurrentExcelPath.Name = "richTextBox_CurrentExcelPath";
+            this.richTextBox_CurrentExcelPath.ReadOnly = true;
+            this.richTextBox_CurrentExcelPath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox_CurrentExcelPath.Size = new System.Drawing.Size(265, 48);
+            this.richTextBox_CurrentExcelPath.TabIndex = 23;
+            this.richTextBox_CurrentExcelPath.Text = "";
             // 
             // label9
             // 
-            this.label9.Location = new System.Drawing.Point(3, 42);
+            this.label9.Location = new System.Drawing.Point(6, 40);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(206, 51);
             this.label9.TabIndex = 5;
@@ -675,23 +733,33 @@
             this.label13.TabIndex = 10;
             this.label13.Text = "Current folder path";
             // 
-            // label_CurrentExcelPath
+            // label_LatLonPathMessage
             // 
-            this.label_CurrentExcelPath.Location = new System.Drawing.Point(224, 41);
-            this.label_CurrentExcelPath.Name = "label_CurrentExcelPath";
-            this.label_CurrentExcelPath.Size = new System.Drawing.Size(265, 48);
-            this.label_CurrentExcelPath.TabIndex = 14;
+            this.label_LatLonPathMessage.Location = new System.Drawing.Point(517, 272);
+            this.label_LatLonPathMessage.Name = "label_LatLonPathMessage";
+            this.label_LatLonPathMessage.Size = new System.Drawing.Size(463, 34);
+            this.label_LatLonPathMessage.TabIndex = 13;
             // 
             // label_PDFPathMessage
             // 
-            this.label_PDFPathMessage.Location = new System.Drawing.Point(520, 211);
+            this.label_PDFPathMessage.Location = new System.Drawing.Point(517, 204);
             this.label_PDFPathMessage.Name = "label_PDFPathMessage";
-            this.label_PDFPathMessage.Size = new System.Drawing.Size(463, 45);
+            this.label_PDFPathMessage.Size = new System.Drawing.Size(463, 34);
             this.label_PDFPathMessage.TabIndex = 13;
+            // 
+            // button_UpdateLatLonPath
+            // 
+            this.button_UpdateLatLonPath.Location = new System.Drawing.Point(905, 246);
+            this.button_UpdateLatLonPath.Name = "button_UpdateLatLonPath";
+            this.button_UpdateLatLonPath.Size = new System.Drawing.Size(75, 22);
+            this.button_UpdateLatLonPath.TabIndex = 22;
+            this.button_UpdateLatLonPath.Text = "Update";
+            this.button_UpdateLatLonPath.UseVisualStyleBackColor = true;
+            this.button_UpdateLatLonPath.Click += new System.EventHandler(this.button_UpdateLatLonPath_Click);
             // 
             // button_UpdatePDFPath
             // 
-            this.button_UpdatePDFPath.Location = new System.Drawing.Point(905, 186);
+            this.button_UpdatePDFPath.Location = new System.Drawing.Point(905, 179);
             this.button_UpdatePDFPath.Name = "button_UpdatePDFPath";
             this.button_UpdatePDFPath.Size = new System.Drawing.Size(75, 22);
             this.button_UpdatePDFPath.TabIndex = 22;
@@ -709,16 +777,23 @@
             this.label12.TabIndex = 9;
             this.label12.Text = "New folder path";
             // 
+            // textBox_NewLatLonPath
+            // 
+            this.textBox_NewLatLonPath.Location = new System.Drawing.Point(517, 246);
+            this.textBox_NewLatLonPath.Name = "textBox_NewLatLonPath";
+            this.textBox_NewLatLonPath.Size = new System.Drawing.Size(382, 23);
+            this.textBox_NewLatLonPath.TabIndex = 19;
+            // 
             // textBox_NewPDFPath
             // 
-            this.textBox_NewPDFPath.Location = new System.Drawing.Point(517, 185);
+            this.textBox_NewPDFPath.Location = new System.Drawing.Point(517, 178);
             this.textBox_NewPDFPath.Name = "textBox_NewPDFPath";
             this.textBox_NewPDFPath.Size = new System.Drawing.Size(382, 23);
             this.textBox_NewPDFPath.TabIndex = 19;
             // 
             // button_UpdateKMZPath
             // 
-            this.button_UpdateKMZPath.Location = new System.Drawing.Point(908, 110);
+            this.button_UpdateKMZPath.Location = new System.Drawing.Point(905, 109);
             this.button_UpdateKMZPath.Name = "button_UpdateKMZPath";
             this.button_UpdateKMZPath.Size = new System.Drawing.Size(75, 22);
             this.button_UpdateKMZPath.TabIndex = 21;
@@ -726,23 +801,16 @@
             this.button_UpdateKMZPath.UseVisualStyleBackColor = true;
             this.button_UpdateKMZPath.Click += new System.EventHandler(this.button_UpdateKMZPath_Click);
             // 
-            // label_CurrentPDFPath
-            // 
-            this.label_CurrentPDFPath.Location = new System.Drawing.Point(224, 190);
-            this.label_CurrentPDFPath.Name = "label_CurrentPDFPath";
-            this.label_CurrentPDFPath.Size = new System.Drawing.Size(265, 48);
-            this.label_CurrentPDFPath.TabIndex = 15;
-            // 
             // textBox_NewExcelPath
             // 
-            this.textBox_NewExcelPath.Location = new System.Drawing.Point(517, 38);
+            this.textBox_NewExcelPath.Location = new System.Drawing.Point(517, 42);
             this.textBox_NewExcelPath.Name = "textBox_NewExcelPath";
             this.textBox_NewExcelPath.Size = new System.Drawing.Size(270, 23);
             this.textBox_NewExcelPath.TabIndex = 17;
             // 
             // button_UpdateExcelPath
             // 
-            this.button_UpdateExcelPath.Location = new System.Drawing.Point(905, 38);
+            this.button_UpdateExcelPath.Location = new System.Drawing.Point(905, 43);
             this.button_UpdateExcelPath.Name = "button_UpdateExcelPath";
             this.button_UpdateExcelPath.Size = new System.Drawing.Size(75, 22);
             this.button_UpdateExcelPath.TabIndex = 20;
@@ -750,9 +818,17 @@
             this.button_UpdateExcelPath.UseVisualStyleBackColor = true;
             this.button_UpdateExcelPath.Click += new System.EventHandler(this.button_UpdateExcelPath_Click);
             // 
+            // label6
+            // 
+            this.label6.Location = new System.Drawing.Point(6, 246);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(184, 48);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "Change the folder path for the soil report lat lons:";
+            // 
             // label15
             // 
-            this.label15.Location = new System.Drawing.Point(3, 190);
+            this.label15.Location = new System.Drawing.Point(3, 179);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(184, 48);
             this.label15.TabIndex = 7;
@@ -760,9 +836,9 @@
             // 
             // label_KMZPathMessage
             // 
-            this.label_KMZPathMessage.Location = new System.Drawing.Point(517, 136);
+            this.label_KMZPathMessage.Location = new System.Drawing.Point(517, 140);
             this.label_KMZPathMessage.Name = "label_KMZPathMessage";
-            this.label_KMZPathMessage.Size = new System.Drawing.Size(463, 46);
+            this.label_KMZPathMessage.Size = new System.Drawing.Size(463, 34);
             this.label_KMZPathMessage.TabIndex = 12;
             // 
             // textBox_NewKMZPath
@@ -775,7 +851,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(793, 42);
+            this.label14.Location = new System.Drawing.Point(793, 45);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(106, 15);
             this.label14.TabIndex = 8;
@@ -783,21 +859,14 @@
             // 
             // label_ExcelPathMessage
             // 
-            this.label_ExcelPathMessage.Location = new System.Drawing.Point(517, 64);
+            this.label_ExcelPathMessage.Location = new System.Drawing.Point(517, 72);
             this.label_ExcelPathMessage.Name = "label_ExcelPathMessage";
-            this.label_ExcelPathMessage.Size = new System.Drawing.Size(463, 43);
+            this.label_ExcelPathMessage.Size = new System.Drawing.Size(463, 34);
             this.label_ExcelPathMessage.TabIndex = 11;
-            // 
-            // label_CurrentKMZPath
-            // 
-            this.label_CurrentKMZPath.Location = new System.Drawing.Point(224, 113);
-            this.label_CurrentKMZPath.Name = "label_CurrentKMZPath";
-            this.label_CurrentKMZPath.Size = new System.Drawing.Size(265, 48);
-            this.label_CurrentKMZPath.TabIndex = 16;
             // 
             // label11
             // 
-            this.label11.Location = new System.Drawing.Point(3, 114);
+            this.label11.Location = new System.Drawing.Point(6, 109);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(184, 48);
             this.label11.TabIndex = 6;
@@ -810,9 +879,9 @@
             this.panel7.Controls.Add(this.button_UpdateKMZDB);
             this.panel7.Controls.Add(this.button1);
             this.panel7.Controls.Add(this.label_UpdateKMZDB);
-            this.panel7.Location = new System.Drawing.Point(-1, 145);
+            this.panel7.Location = new System.Drawing.Point(-1, 147);
             this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(1225, 199);
+            this.panel7.Size = new System.Drawing.Size(1225, 141);
             this.panel7.TabIndex = 24;
             // 
             // label_KMZDBUpdateTime
@@ -848,7 +917,7 @@
             // 
             this.label_UpdateKMZDB.Location = new System.Drawing.Point(12, 66);
             this.label_UpdateKMZDB.Name = "label_UpdateKMZDB";
-            this.label_UpdateKMZDB.Size = new System.Drawing.Size(562, 124);
+            this.label_UpdateKMZDB.Size = new System.Drawing.Size(562, 70);
             this.label_UpdateKMZDB.TabIndex = 2;
             // 
             // panel6
@@ -894,7 +963,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(1224, 611);
+            this.tabPage4.Size = new System.Drawing.Size(1224, 615);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "Missing PDFs";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -982,15 +1051,11 @@
         private Button button_SearchMapPDFs;
         private Label label17;
         private Button button_ClearMapList;
-        private Button button_UpdatePDFPath;
         private Button button_UpdateKMZPath;
         private Button button_UpdateExcelPath;
         private TextBox textBox_NewPDFPath;
         private TextBox textBox_NewKMZPath;
         private TextBox textBox_NewExcelPath;
-        private Label label_CurrentPDFPath;
-        private Label label_CurrentKMZPath;
-        private Label label_CurrentExcelPath;
         private Label label_PDFPathMessage;
         private Label label_KMZPathMessage;
         private Label label_ExcelPathMessage;
@@ -1013,5 +1078,14 @@
         private Panel panel8;
         private Panel panel7;
         private Panel panel6;
+        private Label label_LatLonPathMessage;
+        private Button button_UpdateLatLonPath;
+        private Button button_UpdatePDFPath;
+        private TextBox textBox_NewLatLonPath;
+        private Label label6;
+        private RichTextBox richTextBox_CurrentKMZPath;
+        private RichTextBox richTextBox_CurrentExcelPath;
+        private RichTextBox richTextBox_CurrentLatLonPath;
+        private RichTextBox richTextBox_CurrentPDFPath;
     }
 }

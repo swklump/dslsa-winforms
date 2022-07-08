@@ -68,36 +68,6 @@ namespace dslsa
             }
         }
 
-        private void button_OpenPDF_Click(object sender, EventArgs e)
-        {
-            label_Message.Text = "Processing...";
-            label_Message.ForeColor = Color.Blue;
-            label_Message.Invalidate();
-            label_Message.Update();
-
-            //open the pdf
-            using (Process p = new Process())
-            {
-                try
-                {
-                    p.StartInfo = new ProcessStartInfo()
-                    {
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        FileName = pdffolder + report + ".pdf"
-                    };
-                    p.Start();
-                    label_Message.Text = "The report was opened!";
-                    label_Message.ForeColor = Color.Green;
-                }
-                catch (Exception ex)
-                {
-                    label_Message.Text = "Report " + report + " does not exist in the PDF folder.";
-                    label_Message.ForeColor = Color.Red;
-                }
-            }
-        }
-
         private void button_AddToList_Click(object sender, EventArgs e)
         {
             if (!((Form1)f).map_report_list.Contains(report))
@@ -120,6 +90,48 @@ namespace dslsa
             }
         }
 
+        private void button_OpenPDF_Click(object sender, EventArgs e)
+        {
+            label_Message.Text = "Processing...";
+            label_Message.ForeColor = Color.Blue;
+            label_Message.Invalidate();
+            label_Message.Update();
+
+            //open the pdf
+            bool pdffound = false;
+            string fname_edited = string.Empty;
+
+            foreach (string f in Directory.GetFiles(pdffolder, "*.pdf").ToList())
+            {
+                string filename = f.Replace(pdffolder, "");
+                int index_space = filename.IndexOf(" ");
+                if (index_space == -1) { fname_edited = filename.Replace(".pdf", ""); }
+                else { fname_edited = filename.Substring(0, index_space); }
+
+                if (fname_edited == report)
+                {
+                    using (Process p = new Process())
+                    {
+                        p.StartInfo = new ProcessStartInfo()
+                        {
+                            CreateNoWindow = true,
+                            UseShellExecute = true,
+                            FileName = f
+                        };
+                        p.Start();
+                        label_Message.Text = "The report was opened!";
+                        label_Message.ForeColor = Color.Green;
+                        pdffound = true;
+                    }
+                }
+            }
+            if (!pdffound)
+            {
+                label_Message.Text = "Report " + report + " does not exist in the PDF folder.";
+                label_Message.ForeColor = Color.Red;
+            }
+        }
+
         private void button_EmailPDF_Click(object sender, EventArgs e)
         {
             label_Message.Text = "Processing...";
@@ -127,7 +139,28 @@ namespace dslsa
             label_Message.Invalidate();
             label_Message.Update();
 
-            if (!File.Exists(pdffolder + report + ".pdf"))
+            //copy files to temp folder
+            bool pdffound = false;
+            string foundfilepath = string.Empty;
+            string fname_edited = string.Empty;
+
+            foreach (string f in Directory.GetFiles(pdffolder, "*.pdf").ToList())
+            {
+                string filename = f.Replace(pdffolder, "");
+                int index_space = filename.IndexOf(" ");
+                if (index_space == -1) { fname_edited = filename.Replace(".pdf", ""); }
+                else { fname_edited = filename.Substring(0, index_space); }
+
+                if (fname_edited == report)
+                {
+                    pdffound = true;
+                    foundfilepath = f;
+                }
+
+            }
+
+
+            if (!pdffound)
             {
                 label_Message.Text = "Report " + report + " does not exist in the PDF folder.";
                 label_Message.ForeColor = Color.Red;
@@ -156,7 +189,7 @@ namespace dslsa
                 oMsg.HTMLBody += "Thanks,";
                 int pos = (int)oMsg.Body.Length + 1;
                 int attachType = (int)Outlook.OlAttachmentType.olByValue;
-                Outlook.Attachment oAttach = oMsg.Attachments.Add(pdffolder + report + ".pdf", attachType, pos, report + ".pdf");
+                Outlook.Attachment oAttach = oMsg.Attachments.Add(foundfilepath, attachType, pos, report + ".pdf");
                 oMsg.Display(false);
 
                 label_Message.Text = "Email draft created!";

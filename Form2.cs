@@ -1,5 +1,4 @@
-﻿using System.Data.SQLite;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 using Outlook = Microsoft.Office.Interop.Outlook;
 
@@ -16,8 +15,6 @@ namespace dslsa
         public List<string> report_nums = new List<string>();
         private FolderBrowserDialog folderBrowserDialog1;
         private string pdffolder;
-        private string selectedState;
-        private string dbpath = @"dslsa_database.db";
 
         //NAVIGATION METHODS............................................................
         private void button_MainMenu_Click(object sender, EventArgs e)
@@ -36,12 +33,13 @@ namespace dslsa
         private void Form_SearchResults_Load(object sender, EventArgs e)
         {
             report_nums = ((Form1)f).report_nums;
-            selectedState = ((Form1)f).selectedState + @"\";
+            pdffolder = ((Form1)f).pdffolder;
             if (report_nums.Count() > 20)
             {
                 button_OpenPDFs.Visible = false;
             }
             textBox_SearchResults.BackColor = SystemColors.Control;
+
 
             //display number of results to label
             if (report_nums.Count == 0)
@@ -63,22 +61,6 @@ namespace dslsa
                 textBox_SearchResults.Text = string.Format("There were {0} reports found!", report_nums.Count.ToString());
                 textBox_SearchResults.ForeColor = Color.Green;
             }
-
-            //get pdf folder
-            SQLiteCommand cmd_sql;
-            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
-            con.Open();
-            string sql = string.Empty;
-            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
-            {
-                using (SQLiteDataReader rdr = cmd.ExecuteReader())
-                {
-                    while (rdr.Read())
-                    {
-                        pdffolder = Convert.ToString(rdr["value"]) + @"\" + selectedState;
-                    }
-                }
-            }
         }
 
         private void button_OpenPDFs_Click(object sender, EventArgs e)
@@ -88,28 +70,44 @@ namespace dslsa
             textBox_SearchResults.Invalidate();
             textBox_SearchResults.Update();
 
+            List<string> pdfsfound = new List<string>();
             List<string> pdfsnotfound = new List<string>();
+            string fname_edited = string.Empty;
             string message = string.Empty;
             string reportstring = string.Empty;
 
             //open the pdfs, start outlook if not already open
-            using (Process p = new Process())
+            //loop through each file and check if in report_nums, or if left of space is in report nums
+            //some pdf names have initials and dates added after space
+
+            foreach (string f in Directory.GetFiles(pdffolder, "*.pdf").ToList())
             {
-                foreach (var report in report_nums)
+                string filename = f.Replace(pdffolder, "");
+                int index_space = filename.IndexOf(" ");
+                if (index_space == -1) { fname_edited = filename.Replace(".pdf", ""); }
+                else { fname_edited = filename.Substring(0, index_space); }
+
+                if (report_nums.Contains(fname_edited))
                 {
-                    if (File.Exists(pdffolder + report + ".pdf"))
+                    using (Process p = new Process())
                     {
                         p.StartInfo = new ProcessStartInfo()
                         {
                             CreateNoWindow = true,
                             UseShellExecute = true,
-                            FileName = pdffolder + report + ".pdf"
+                            FileName = f
                         };
                         p.Start();
+                        pdfsfound.Add(fname_edited.Replace(".pdf", ""));
                     }
-                    else { pdfsnotfound.Add(report); }
+
                 }
             }
+            foreach (string report in report_nums)
+            {
+                if (!pdfsfound.Contains(report)) { pdfsnotfound.Add(report); }
+            }
+
 
             //change the label message depending on what reports exist
             if (pdfsnotfound.Count == report_nums.Count)
@@ -151,19 +149,44 @@ namespace dslsa
                     return;
                 }
 
+                if (File.Exists(folderName + @"\SoilReportPDFs.zip"))
+                {
+                    textBox_SearchResults.Text = "Cannot save files in that folder. There is already a folder called 'SoilsReportPDFs.zip' in that directory. Delete the zipped file or select a different folder.";
+                    textBox_SearchResults.ForeColor = Color.Red;
+                    return;
+                }
+
                 textBox_SearchResults.Text = "Processing...";
                 textBox_SearchResults.ForeColor = Color.Blue;
                 textBox_SearchResults.Invalidate();
                 textBox_SearchResults.Update();
 
                 //copy files to selected folder
+                List<string> pdfsfound = new List<string>();
                 List<string> pdfsnotfound = new List<string>();
-                foreach (var report in report_nums)
+                string fname_edited = string.Empty;
+                using (Process p = new Process())
                 {
-                    string sourceFile = pdffolder + report + ".pdf";
-                    string destFile = folderName + @"\SoilReportPDFs\" + report + ".pdf";
-                    if (File.Exists(sourceFile)) { File.Copy(sourceFile, destFile, true); }
-                    else { pdfsnotfound.Add(report); }
+                    foreach (string f in Directory.GetFiles(pdffolder, "*.pdf").ToList())
+                    {
+                        string filename = f.Replace(pdffolder, "");
+                        int index_space = filename.IndexOf(" ");
+                        if (index_space == -1) { fname_edited = filename.Replace(".pdf", ""); }
+                        else { fname_edited = filename.Substring(0, index_space); }
+
+                        if (report_nums.Contains(fname_edited))
+                        {
+                            string sourceFile = f;
+                            string destFile = folderName + @"\SoilReportPDFs\" + filename;
+                            if (File.Exists(sourceFile)) { File.Copy(sourceFile, destFile, true); }
+                            pdfsfound.Add(fname_edited.Replace(".pdf", ""));
+                        }
+
+                    }
+                }
+                foreach (string report in report_nums)
+                {
+                    if (!pdfsfound.Contains(report)) { pdfsnotfound.Add(report); }
                 }
 
                 string message = string.Empty;
@@ -192,12 +215,12 @@ namespace dslsa
                 //change the label message depending on what reports exist
                 if (pdfsnotfound.Count == 0)
                 {
-                    textBox_SearchResults.Text = "All PDFs have been successfully saved in the selected folder (look for 'SoilReportPDFs.zip').";
+                    textBox_SearchResults.Text = string.Format("All PDFs have been successfully saved in {0}.", folderName + @"\SoilReportPDFs.zip");
                     textBox_SearchResults.ForeColor = Color.Green;
                 }
                 else
                 {
-                    message = "PDFs have been saved in the selected folder (look for 'SoilReportPDFs.zip'). The following PDFs are shown in the Excel file but do not exist in the PDF folder: ";
+                    message = string.Format("PDFs have been saved in {0}. The following PDFs are shown in the Excel file but do not exist in the PDF folder: ", folderName + @"\SoilReportPDFs.zip");
                     reportstring = string.Join(",", pdfsnotfound.ToArray());
                     textBox_SearchResults.Text = message + reportstring;
                     textBox_SearchResults.ForeColor = Color.Green;
@@ -225,13 +248,29 @@ namespace dslsa
             Directory.CreateDirectory(tempPath + @"\SoilReportPDFs");
 
             //copy files to temp folder
+            List<string> pdfsfound = new List<string>();
             List<string> pdfsnotfound = new List<string>();
-            foreach (var report in report_nums)
+            string fname_edited = string.Empty;
+
+            foreach (string f in Directory.GetFiles(pdffolder, "*.pdf").ToList())
             {
-                string sourceFile = pdffolder + report + ".pdf";
-                string destFile = tempPath + @"\SoilReportPDFs\" + report + ".pdf";
-                if (File.Exists(sourceFile)) { File.Copy(sourceFile, destFile, true); }
-                else { pdfsnotfound.Add(report); }
+                string filename = f.Replace(pdffolder, "");
+                int index_space = filename.IndexOf(" ");
+                if (index_space == -1) { fname_edited = filename.Replace(".pdf", ""); }
+                else { fname_edited = filename.Substring(0, index_space); }
+
+                if (report_nums.Contains(fname_edited))
+                {
+                    string sourceFile = f;
+                    string destFile = tempPath + @"\SoilReportPDFs\" + filename;
+                    if (File.Exists(sourceFile)) { File.Copy(sourceFile, destFile, true); }
+                    pdfsfound.Add(fname_edited.Replace(".pdf", ""));
+                }
+
+            }
+            foreach (string report in report_nums)
+            {
+                if (!pdfsfound.Contains(report)) { pdfsnotfound.Add(report); }
             }
 
             if (pdfsnotfound.Count == report_nums.Count)

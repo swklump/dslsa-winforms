@@ -20,6 +20,7 @@ namespace dslsa
         }
 
         internal string selectedState = "";
+        internal string pdffolder = "";
         private List<ListViewItem> masterlist_pn;
         private List<ListViewItem> masterlist_projname;
         private List<ListViewItem> masterlist_county;
@@ -139,7 +140,7 @@ namespace dslsa
                     }
                 }
             }
-            label_CurrentExcelPath.Text = fname;
+            richTextBox_CurrentExcelPath.Text = fname;
             //get kmz folder path to display
             using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
             {
@@ -151,7 +152,7 @@ namespace dslsa
                     }
                 }
             }
-            label_CurrentKMZPath.Text = fname;
+            richTextBox_CurrentKMZPath.Text = fname;
             //get pdf folder path to display
             using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
             {
@@ -163,7 +164,19 @@ namespace dslsa
                     }
                 }
             }
-            label_CurrentPDFPath.Text = fname;
+            richTextBox_CurrentPDFPath.Text = fname;
+            //get lat lon excel report path to display
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='latlonexcelpath'", con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        fname = Convert.ToString(rdr["value"]);
+                    }
+                }
+            }
+            richTextBox_CurrentLatLonPath.Text = fname;
 
             con.Close();
 
@@ -227,17 +240,28 @@ namespace dslsa
                 kvp.Value.RemoveAll(s => s == "");
             }
 
-            List<int> anchoragegrid_ints = new List<int>();
+            List<object> anchoragegrid_dropdownitems = new List<object>();
             //convert anchoragegrid to int
             if (state == "Alaska")
             {
                 foreach (string x in dict_cols["anchoragegrid"])
                 {
                     int y = 0;
-                    if (Int32.TryParse(x, out y)) { anchoragegrid_ints.Add(y); }
+                    if (Int32.TryParse(x, out y)) { anchoragegrid_dropdownitems.Add(y); }
                 }
-                anchoragegrid_ints.Sort();
-                anchoragegrid_ints.Remove(0);
+                anchoragegrid_dropdownitems.Sort();
+                anchoragegrid_dropdownitems.Remove(0);
+
+                List<object> anchoragegrid_textitems = new List<object>();
+                foreach (string x in dict_cols["anchoragegrid"])
+                {
+                    int y = 0;
+                    if (Int32.TryParse(x, out y)) { continue; }
+
+                    if (!x.Contains(",")) { anchoragegrid_textitems.Add(x); }
+                }
+                anchoragegrid_textitems.Sort();
+                anchoragegrid_dropdownitems.AddRange(anchoragegrid_textitems);
             }
 
             con.Close();
@@ -286,7 +310,7 @@ namespace dslsa
 
             if (state == "Alaska")
             {
-                foreach (int grid in anchoragegrid_ints) { comboBox_AncGrid.Items.Add(grid); }
+                foreach (object grid in anchoragegrid_dropdownitems) { comboBox_AncGrid.Items.Add(grid); }
             }
 
             //clear search boxes
@@ -302,6 +326,8 @@ namespace dslsa
 
             textBox_Results.Text = "";
             comboBox_QueryType.SelectedItem = "AND";
+            comboBox_AncGrid.SelectedItem = "";
+
 
             gmap.Overlays.Clear();
             map_report_list.Clear();
@@ -515,7 +541,7 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
                 }
                 catch (Exception) { }
             }
@@ -533,7 +559,7 @@ namespace dslsa
 
             //reset marker dict
             pointDict.Clear();
-            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "lat", "lon", "type", "depth", "year" };
+            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "year", "lat", "lon", "type", "depth" };
             foreach (string k in pointdictkeys) { pointDict.Add(k, new List<string>()); }
 
             //setup database connection
@@ -542,7 +568,7 @@ namespace dslsa
             string sql;
 
             //get markers
-            sql = "SELECT report,projectnumber,projectname,client,lat,lon,type,depth,year FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,year,lat,lon,type,depth FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -615,7 +641,7 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
                 }
                 catch (Exception) { }
             }
@@ -633,7 +659,7 @@ namespace dslsa
 
             //reset marker dict
             pointDict.Clear();
-            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "lat", "lon", "type", "depth", "year" };
+            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "year", "lat", "lon", "type", "depth" };
             foreach (string k in pointdictkeys) { pointDict.Add(k, new List<string>()); }
 
             //setup database connection
@@ -642,7 +668,7 @@ namespace dslsa
             string sql;
 
             //get all tables in database
-            sql = "SELECT report,projectnumber,projectname,client,lat,lon,type,depth,year FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,year,lat,lon,type,depth FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -759,7 +785,7 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
                 }
                 catch (Exception) { }
             }
@@ -777,7 +803,7 @@ namespace dslsa
 
             //reset marker dict
             pointDict.Clear();
-            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "lat", "lon", "type", "depth", "year" };
+            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "year", "lat", "lon", "type", "depth" };
             foreach (string k in pointdictkeys) { pointDict.Add(k, new List<string>()); }
 
             //setup database connection
@@ -786,7 +812,7 @@ namespace dslsa
             string sql;
 
             //get all tables in database
-            sql = "SELECT report,projectnumber,projectname,client,lat,lon,type,depth,year FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,year,lat,lon,type,depth FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -867,7 +893,7 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    if (selectedGrid != "") { query_whereclause.Add("anchoragegrid='" + selectedGrid + "'"); }
+                    if (selectedGrid != "") { query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'"); }
                 }
                 catch (Exception) { }
             }
@@ -887,7 +913,7 @@ namespace dslsa
 
             //reset marker dict
             pointDict.Clear();
-            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "lat", "lon", "type", "depth", "year" };
+            List<string> pointdictkeys = new List<string>() { "report", "projectnumber", "projectname", "client", "year", "lat", "lon", "type", "depth" };
             foreach (string k in pointdictkeys) { pointDict.Add(k, new List<string>()); }
 
             //setup database connection
@@ -896,7 +922,7 @@ namespace dslsa
             string sql;
 
             //get markers
-            sql = "SELECT report,projectnumber,projectname,client,lat,lon,type,depth,year FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
+            sql = "SELECT report,projectnumber,projectname,client,year, lat,lon,type,depth FROM " + state.ToUpper() + "KMZ WHERE " + query_wherestring;
             using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
             {
                 using (SQLiteDataReader rdr = cmd.ExecuteReader())
@@ -995,26 +1021,37 @@ namespace dslsa
                 label_ExcelPathMessage.ForeColor = Color.Red;
                 return;
             }
-            else
+            //check the excel file is found
+            try
             {
-                SQLiteCommand cmd_sql;
-                SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
-                con.Open();
-
-                string sql = string.Empty;
-                sql = "DELETE FROM FOLDERPATHS WHERE type='excelpath'";
-                cmd_sql = new SQLiteCommand(sql, con);
-                cmd_sql.ExecuteNonQuery();
-
-                sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('excelpath','" + newpath + "')";
-                cmd_sql = new SQLiteCommand(sql, con);
-                cmd_sql.ExecuteNonQuery();
-
-                label_ExcelPathMessage.Text = "Excel folder path and file name updated!";
-                label_ExcelPathMessage.ForeColor = Color.Green;
-
-                label_CurrentExcelPath.Text = newpath;
+                OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + newpath + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';");
+                objConn.Open();
+                objConn.Close();
             }
+            catch (Exception)
+            {
+                label_ExcelPathMessage.Text = "The record excel file does not exist in the path entered. Please enter the correct path.";
+                label_ExcelPathMessage.ForeColor = Color.Red;
+                return;
+            }
+
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+
+            string sql = string.Empty;
+            sql = "DELETE FROM FOLDERPATHS WHERE type='excelpath'";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('excelpath','" + newpath + "')";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            label_ExcelPathMessage.Text = "Excel folder path and file name updated!";
+            label_ExcelPathMessage.ForeColor = Color.Green;
+
+            richTextBox_CurrentExcelPath.Text = newpath;
 
             con.Close();
 
@@ -1075,7 +1112,7 @@ namespace dslsa
             label_KMZPathMessage.Text = "KMZ folder path updated!";
             label_KMZPathMessage.ForeColor = Color.Green;
 
-            label_CurrentKMZPath.Text = newpath;
+            richTextBox_CurrentKMZPath.Text = newpath;
 
             con.Close();
         }
@@ -1100,7 +1137,59 @@ namespace dslsa
             label_PDFPathMessage.Text = "PDF folder path updated!";
             label_PDFPathMessage.ForeColor = Color.Green;
 
-            label_CurrentPDFPath.Text = newpath;
+            richTextBox_CurrentPDFPath.Text = newpath;
+
+            con.Close();
+        }
+
+        private void button_UpdateLatLonPath_Click(object sender, EventArgs e)
+        {
+            string newpath = textBox_NewLatLonPath.Text;
+            if (newpath.Length <= 5)
+            {
+                label_LatLonPathMessage.Text = "Add a folder and file name ending in '.xlsx'";
+                label_LatLonPathMessage.ForeColor = Color.Red;
+                return;
+            }
+            else if (newpath.Substring(newpath.Length - 5) != ".xlsx")
+            {
+                label_LatLonPathMessage.Text = "Add the file name ending in '.xlsx'";
+                label_LatLonPathMessage.ForeColor = Color.Red;
+                return;
+            }
+
+            //check the excel file is found
+            try
+            {
+                OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + newpath + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';");
+                objConn.Open();
+                objConn.Close();
+            }
+            catch (Exception)
+            {
+                label_LatLonPathMessage.Text = "The lat lon excel file does not exist in the path entered. Please enter the correct path.";
+                label_LatLonPathMessage.ForeColor = Color.Red;
+                return;
+            }
+
+            SQLiteCommand cmd_sql;
+            SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+
+            string sql = string.Empty;
+            sql = "DELETE FROM FOLDERPATHS WHERE type='latlonexcelpath'";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            sql = "INSERT INTO FOLDERPATHS (type,value) VALUES ('latlonexcelpath','" + newpath + "')";
+            cmd_sql = new SQLiteCommand(sql, con);
+            cmd_sql.ExecuteNonQuery();
+
+            label_LatLonPathMessage.Text = "Lat Lon Excel folder path and file name updated!";
+            label_LatLonPathMessage.ForeColor = Color.Green;
+
+            richTextBox_CurrentLatLonPath.Text = newpath;
+
 
             con.Close();
         }
@@ -1159,6 +1248,27 @@ namespace dslsa
             DataTable dtResult = null;
             int totalSheet = 0;
 
+            //check that excel file found
+            if (!File.Exists(fname))
+            {
+                label_UpdateRecordDB.Text = "The record excel file does not exist in the path entered. Please enter the correct path at the bottom of the page (include the file name).";
+                label_UpdateRecordDB.ForeColor = Color.Red;
+                return;
+            }
+            try
+            {
+
+                OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';");
+                objConn.Open();
+                objConn.Close();
+            }
+            catch (Exception)
+            {
+                label_UpdateRecordDB.Text = "Please close the excel file when updating the database.";
+                label_UpdateRecordDB.ForeColor = Color.Red;
+                return;
+            }
+
             try
             {
                 using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
@@ -1209,13 +1319,13 @@ namespace dslsa
                                 if (state == "ALASKA")
                                 {
                                     sql = "CREATE TABLE IF NOT EXISTS ALASKA(" +
-                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid INT" +
+                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255), year INT" +
                                         ")";
                                 }
                                 else
                                 {
                                     sql = string.Format("CREATE TABLE IF NOT EXISTS {0}(" +
-                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255)" +
+                                        "report VARCHAR(255), projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255), year INT" +
                                         ")", state);
                                 }
                                 cmd_sql = new SQLiteCommand(sql, con);
@@ -1231,10 +1341,10 @@ namespace dslsa
                                         {
                                             foreach (DataRow dataRow in dtResult.Rows)
                                             {
-                                                cmd_sql.CommandText = "INSERT INTO ALASKA(report,projectnumber,client,projectname,area,city,anchoragegrid) VALUES (";
-                                                for (int i = 0; i < 7; i++)
+                                                cmd_sql.CommandText = "INSERT INTO ALASKA(report,projectnumber,client,projectname,area,city,anchoragegrid,year) VALUES (";
+                                                for (int i = 0; i < 8; i++)
                                                 {
-                                                    if (i == 6)
+                                                    if (i == 7)
                                                     {
                                                         cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "'";
                                                     }
@@ -1260,10 +1370,10 @@ namespace dslsa
                                         {
                                             foreach (DataRow dataRow in dtResult.Rows)
                                             {
-                                                cmd_sql.CommandText = string.Format("INSERT INTO {0}(report,projectnumber,client,projectname,city) VALUES (", state);
-                                                for (int i = 0; i < 5; i++)
+                                                cmd_sql.CommandText = string.Format("INSERT INTO {0}(report,projectnumber,client,projectname,city,year) VALUES (", state);
+                                                for (int i = 0; i < 6; i++)
                                                 {
-                                                    if (i == 4)
+                                                    if (i == 5)
                                                     {
                                                         cmd_sql.CommandText = cmd_sql.CommandText + "'" + dataRow[i].ToString().Replace("'", "''") + "'";
                                                     }
@@ -1372,7 +1482,6 @@ namespace dslsa
                     label_UpdateRecordDB.ForeColor = Color.Green;
                     label_UpdateRecordDB.Invalidate();
                     label_UpdateRecordDB.Update();
-                    objConn.Close();
                 }
 
             }
@@ -1426,6 +1535,7 @@ namespace dslsa
             con.Open();
             string sql = string.Empty;
             string fname = string.Empty;
+            string fname_latlon = string.Empty;
 
             //get kmz path
             using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='kmzpath'", con))
@@ -1472,7 +1582,7 @@ namespace dslsa
                 List<string> ak_final_files = new List<string>();
 
                 //create database table
-                sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT)";
+                sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT)";
                 cmd_sql = new SQLiteCommand(sql, con);
                 cmd_sql.ExecuteNonQuery();
 
@@ -1518,7 +1628,7 @@ namespace dslsa
                                     foreach (var place in placemarks)
                                     {
                                         IDictionary<string, string> pointDict = new Dictionary<string, string>();
-                                        List<string> dictkeys = new List<string>() { "report", "lat", "lon", "type", "depth", "year" };
+                                        List<string> dictkeys = new List<string>() { "report", "lat", "lon", "type", "depth" };
                                         foreach (string key in dictkeys) { pointDict.Add(key, ""); }
 
                                         //get lat lons
@@ -1531,23 +1641,11 @@ namespace dslsa
 
                                         //get file(report), type, depth, year
                                         string dummyvar;
-                                        List<string> searchstrings = new List<string>() { "file", "type", "depth", "year" };
+                                        List<string> searchstrings = new List<string>() { "file", "type", "depth" };
                                         foreach (string s in searchstrings)
                                         {
                                             searchstring = string.Format("<td>{0}</td>", s);
                                             if (s == "file" && desc.IndexOf(searchstring) == -1) { searchstring = "<td>redfile</td>"; }
-                                            else if (s == "year" && desc.IndexOf(searchstring) == -1)
-                                            {
-                                                searchstring = "<td>rptyear</td>";
-                                                if (desc.IndexOf(searchstring) == -1)
-                                                {
-                                                    searchstring = "<td>reportyear</td>";
-                                                    if (desc.IndexOf(searchstring) == -1)
-                                                    {
-                                                        searchstring = "<td>date</td>";
-                                                    }
-                                                }
-                                            }
 
                                             startindex = desc.IndexOf(searchstring) + searchstring.Length;
                                             endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
@@ -1557,7 +1655,7 @@ namespace dslsa
                                             else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
                                         }
 
-                                        cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth,year) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"], pointDict["year"]);
+                                        cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth) VALUES ('{0}','{1}','{2}','{3}','{4}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"]);
                                         cmd.ExecuteNonQuery();
                                     }
                                     transaction.Commit();
@@ -1577,11 +1675,11 @@ namespace dslsa
 
 
                 //create the join table
-                sql = "CREATE TABLE IF NOT EXISTS ALASKAKMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255))";
+                sql = "CREATE TABLE IF NOT EXISTS ALASKAKMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), area VARCHAR(255), city VARCHAR(255), anchoragegrid VARCHAR(255), year INT)";
                 cmd_sql = new SQLiteCommand(sql, con);
                 cmd_sql.ExecuteNonQuery();
 
-                sql = "INSERT INTO ALASKAKMZ SELECT KMZ.report, lat, lon, type, depth, year, projectnumber, client, projectname, area, city, anchoragegrid FROM KMZ " +
+                sql = "INSERT INTO ALASKAKMZ SELECT KMZ.report, lat, lon, type, depth, projectnumber, client, projectname, area, city, anchoragegrid, year FROM KMZ " +
                     "LEFT JOIN ALASKA " +
                     "ON (KMZ.report=ALASKA.report)";
 
@@ -1596,8 +1694,39 @@ namespace dslsa
 
 
                 //now parse the Excel for the other states
-                fname = @"C:\Users\klump\OneDrive\Programming\Soils Report Lat Lons.xlsx";
-                using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
+                //get excel latlon path
+                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='latlonexcelpath'", con))
+                {
+                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            fname_latlon = Convert.ToString(rdr["value"]);
+                        }
+                    }
+                }
+                //check that excel file found
+                if (!File.Exists(fname_latlon))
+                {
+                    label_UpdateKMZDB.Text = "The lat lon excel file does not exist in the path entered. Please enter the correct path at the bottom of the page (include the file name).";
+                    label_UpdateKMZDB.ForeColor = Color.Red;
+                    return;
+                }
+                try
+                {
+
+                    OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname_latlon + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';");
+                    objConn.Open();
+                    objConn.Close();
+                }
+                catch (Exception)
+                {
+                    label_UpdateKMZDB.Text = "Please close the lat lon excel file when updating the database.";
+                    label_UpdateKMZDB.ForeColor = Color.Red;
+                    return;
+                }
+
+                using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fname_latlon + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
                 {
                     DataTable dtResult = null;
                     int totalSheet = 0;
@@ -1615,7 +1744,7 @@ namespace dslsa
                         foreach (DataRow drs in dt.Rows)
                         {
                             //create database table
-                            sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT)";
+                            sql = "CREATE TABLE IF NOT EXISTS KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT)";
                             cmd_sql = new SQLiteCommand(sql, con);
                             cmd_sql.ExecuteNonQuery();
 
@@ -1674,13 +1803,13 @@ namespace dslsa
                                     }
                                 }
                                 //create the join table
-                                sql = String.Format("CREATE TABLE IF NOT EXISTS {0}KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, year INT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255))", state);
+                                sql = String.Format("CREATE TABLE IF NOT EXISTS {0}KMZ(report VARCHAR(255), lat FLOAT, lon FLOAT, type VARCHAR(255), depth FLOAT, projectnumber VARCHAR(255), client VARCHAR(255), projectname VARCHAR(255), city VARCHAR(255), year INT)", state);
                                 cmd_sql = new SQLiteCommand(sql, con);
                                 cmd_sql.ExecuteNonQuery();
 
                                 try
                                 {
-                                    sql = String.Format("INSERT INTO {0}KMZ SELECT KMZ.report, lat, lon, type, depth, year, projectnumber, client, projectname, city FROM KMZ " +
+                                    sql = String.Format("INSERT INTO {0}KMZ SELECT KMZ.report, lat, lon, type, depth, projectnumber, client, projectname, city, year FROM KMZ " +
                                         "LEFT JOIN {0} " +
                                         "ON (KMZ.report={0}.report)", state);
 
@@ -1727,12 +1856,13 @@ namespace dslsa
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             //clear labels
-            List<Label> labels_toclear = new List<Label>() { label_UpdateRecordDB, label_UpdateKMZDB, label_ExcelPathMessage, label_KMZPathMessage, label_PDFPathMessage };
+            List<Label> labels_toclear = new List<Label>() { label_UpdateRecordDB, label_UpdateKMZDB, label_ExcelPathMessage, label_KMZPathMessage, label_PDFPathMessage, label_LatLonPathMessage };
             foreach (Label label in labels_toclear) { label.Text = ""; label.ForeColor = Color.Black; }
 
             textBox_NewExcelPath.Text = "";
             textBox_NewKMZPath.Text = "";
             textBox_NewPDFPath.Text = "";
+            textBox_NewLatLonPath.Text = "";
 
         }
 
@@ -1740,6 +1870,32 @@ namespace dslsa
         ////MAIN SEARCH METHOD.....................................................................
         private void button_SearchPDFs_Click(object sender, EventArgs e)
         {
+
+            //check that pdffolder exists
+            SQLiteCommand cmd_sql;
+            string sql = string.Empty;
+            using (SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;"))
+            {
+                con.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
+                {
+                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            pdffolder = Convert.ToString(rdr["value"]) + @"\" + selectedState + @"\";
+                        }
+                    }
+                }
+                con.Close();
+            }
+            if (!Directory.Exists(pdffolder))
+            {
+                textBox_Results.Text = "The PDF folder does not exist. Enter the correct PDF folder in the Admin tab.";
+                textBox_Results.ForeColor = Color.Red;
+                return;
+            }
+
             //build query based on selections
             report_nums.Clear();
             List<string> cols = new List<string>();
@@ -1750,6 +1906,7 @@ namespace dslsa
             string selectedProjName = String.Empty;
             string selectedCounty = String.Empty;
             string selectedCity = String.Empty;
+            string selectedGrid = String.Empty;
 
             try
             {
@@ -1785,6 +1942,14 @@ namespace dslsa
 
             }
             catch (Exception) { }
+            try
+            {
+                selectedGrid = comboBox_AncGrid.Text.ToString();
+                cols.Add("anchoragegrid");
+                query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
+
+            }
+            catch (Exception) { }
 
             //send error message if no selections made
             if (cols.Count == 1)
@@ -1807,7 +1972,7 @@ namespace dslsa
             using (SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;"))
             {
                 con.Open();
-                string sql = "SELECT " + colnames + " FROM " + state.ToUpper() + " WHERE " + query_wherestring;
+                sql = "SELECT " + colnames + " FROM " + state.ToUpper() + " WHERE " + query_wherestring;
                 using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
                 {
                     using (SQLiteDataReader rdr = cmd.ExecuteReader())
