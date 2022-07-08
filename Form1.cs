@@ -8,6 +8,7 @@ using System.Data.SQLite;
 using System.Globalization;
 using System.IO.Compression;
 using System.Net;
+using System.Text;
 using System.Xml.Linq;
 
 namespace dslsa
@@ -97,7 +98,7 @@ namespace dslsa
 
             //add them to the combobox
             state_tables.Sort();
-            foreach (string tab in state_tables) { comboBox_State.Items.Add(tab); }
+            foreach (string tab in state_tables) { comboBox_State.Items.Add(tab); comboBox_StateAdmin.Items.Add(tab); }
 
             //set last update datetime for record and kmz databases
             string record_datetimeupdate = String.Empty;
@@ -181,13 +182,11 @@ namespace dslsa
             con.Close();
 
             comboBox_State.SelectedItem = "Alaska";
+            comboBox_StateAdmin.SelectedItem = "Alaska";
             selectedState = "Alaska";
             comboBox_QueryType.SelectedItem = "AND";
             comboBox_AncGrid.SelectedItem = "";
             textBox_Results.Text = "";
-
-
-
         }
 
         private void comboBoxState_SelectedValueChanged(object sender, EventArgs e)
@@ -356,6 +355,7 @@ namespace dslsa
             string selectedPN;
             string selectedProjName;
             string selectedCity;
+            string selectedGrid;
 
             try
             {
@@ -377,6 +377,18 @@ namespace dslsa
                 query_whereclause.Add("city='" + selectedCity + "'");
             }
             catch (Exception) { }
+            if (state == "Alaska")
+            {
+                try
+                {
+                    selectedGrid = comboBox_AncGrid.Text.ToString();
+                    if (selectedGrid != "")
+                    {
+                        query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    }
+                }
+                catch (Exception) { }
+            }
 
             string query_type = comboBox_QueryType.SelectedItem.ToString();
             string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
@@ -424,6 +436,19 @@ namespace dslsa
             }
             textBox_Results.Text = "";
 
+            //get unique list of reports, assign a marker type
+            HashSet<string> unique_reports_hash = new HashSet<string>(pointDict["report"]);
+            List<string> unique_reports_list = unique_reports_hash.ToList();
+            IDictionary<string, string> unique_reports_dict = new Dictionary<string, string>();
+            int counter = 1;
+            foreach (string r in unique_reports_list)
+            {
+                unique_reports_dict.Add(r, counter.ToString());
+                if (counter < 37) { counter++; }
+                else { counter = 1; }
+
+            }
+
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
@@ -431,14 +456,27 @@ namespace dslsa
                 GMapMarker marker =
                     new GMarkerGoogle(
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
-                        GMarkerGoogleType.blue_pushpin);
+                       (GMarkerGoogleType)Enum.Parse(typeof(GMarkerGoogleType), unique_reports_dict[pointDict["report"].ElementAt(i)], true));
                 markers.Markers.Add(marker);
                 marker_list.Add(marker);
+
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
         }
 
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //clear labels
+            List<Label> labels_toclear = new List<Label>() { label_UpdateRecordDB, label_UpdateKMZDB, label_ExcelPathMessage, label_KMZPathMessage, label_PDFPathMessage, label_LatLonPathMessage };
+            foreach (Label label in labels_toclear) { label.Text = ""; label.ForeColor = Color.Black; }
+
+            textBox_NewExcelPath.Text = "";
+            textBox_NewKMZPath.Text = "";
+            textBox_NewPDFPath.Text = "";
+            textBox_NewLatLonPath.Text = "";
+            label_PDFNotFound.Text = "";
+        }
 
 
 
@@ -541,7 +579,10 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
+                    if (selectedGrid != "")
+                    {
+                        query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    }
                 }
                 catch (Exception) { }
             }
@@ -595,6 +636,19 @@ namespace dslsa
             }
             textBox_Results.Text = "";
 
+            //get unique list of reports, assign a marker type
+            HashSet<string> unique_reports_hash = new HashSet<string>(pointDict["report"]);
+            List<string> unique_reports_list = unique_reports_hash.ToList();
+            IDictionary<string, string> unique_reports_dict = new Dictionary<string, string>();
+            int counter = 1;
+            foreach (string r in unique_reports_list)
+            {
+                unique_reports_dict.Add(r, counter.ToString());
+                if (counter < 37) { counter++; }
+                else { counter = 1; }
+
+            }
+
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
@@ -602,9 +656,10 @@ namespace dslsa
                 GMapMarker marker =
                     new GMarkerGoogle(
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
-                        GMarkerGoogleType.blue_pushpin);
+                       (GMarkerGoogleType)Enum.Parse(typeof(GMarkerGoogleType), unique_reports_dict[pointDict["report"].ElementAt(i)], true));
                 markers.Markers.Add(marker);
                 marker_list.Add(marker);
+
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
@@ -641,7 +696,10 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
+                    if (selectedGrid != "")
+                    {
+                        query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    }
                 }
                 catch (Exception) { }
             }
@@ -695,6 +753,19 @@ namespace dslsa
             }
             textBox_Results.Text = "";
 
+            //get unique list of reports, assign a marker type
+            HashSet<string> unique_reports_hash = new HashSet<string>(pointDict["report"]);
+            List<string> unique_reports_list = unique_reports_hash.ToList();
+            IDictionary<string, string> unique_reports_dict = new Dictionary<string, string>();
+            int counter = 1;
+            foreach (string r in unique_reports_list)
+            {
+                unique_reports_dict.Add(r, counter.ToString());
+                if (counter < 37) { counter++; }
+                else { counter = 1; }
+
+            }
+
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
@@ -702,9 +773,10 @@ namespace dslsa
                 GMapMarker marker =
                     new GMarkerGoogle(
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
-                        GMarkerGoogleType.blue_pushpin);
+                       (GMarkerGoogleType)Enum.Parse(typeof(GMarkerGoogleType), unique_reports_dict[pointDict["report"].ElementAt(i)], true));
                 markers.Markers.Add(marker);
                 marker_list.Add(marker);
+
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
@@ -785,7 +857,10 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
+                    if (selectedGrid != "")
+                    {
+                        query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    }
                 }
                 catch (Exception) { }
             }
@@ -839,17 +914,30 @@ namespace dslsa
             }
             textBox_Results.Text = "";
 
+            //get unique list of reports, assign a marker type
+            HashSet<string> unique_reports_hash = new HashSet<string>(pointDict["report"]);
+            List<string> unique_reports_list = unique_reports_hash.ToList();
+            IDictionary<string, string> unique_reports_dict = new Dictionary<string, string>();
+            int counter = 1;
+            foreach (string r in unique_reports_list)
+            {
+                unique_reports_dict.Add(r, counter.ToString());
+                if (counter < 37) { counter++; }
+                else { counter = 1; }
+
+            }
+
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
             {
-
                 GMapMarker marker =
                     new GMarkerGoogle(
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
-                        GMarkerGoogleType.blue_pushpin);
+                       (GMarkerGoogleType)Enum.Parse(typeof(GMarkerGoogleType), unique_reports_dict[pointDict["report"].ElementAt(i)], true));
                 markers.Markers.Add(marker);
                 marker_list.Add(marker);
+
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
@@ -893,7 +981,7 @@ namespace dslsa
                 try
                 {
                     selectedGrid = comboBox_AncGrid.Text.ToString();
-                    if (selectedGrid != "") { query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'"); }
+                    if (selectedGrid != "") { query_whereclause.Add("anchoragegrid='" + selectedGrid + "'"); }
                 }
                 catch (Exception) { }
             }
@@ -949,6 +1037,19 @@ namespace dslsa
             }
             textBox_Results.Text = "";
 
+            //get unique list of reports, assign a marker type
+            HashSet<string> unique_reports_hash = new HashSet<string>(pointDict["report"]);
+            List<string> unique_reports_list = unique_reports_hash.ToList();
+            IDictionary<string, string> unique_reports_dict = new Dictionary<string, string>();
+            int counter = 1;
+            foreach (string r in unique_reports_list)
+            {
+                unique_reports_dict.Add(r, counter.ToString());
+                if (counter < 37) { counter++; }
+                else { counter = 1; }
+
+            }
+
             // add markers
             GMapOverlay markers = new GMapOverlay("markers");
             for (int i = 0; i < pointDict["lat"].Count(); i++)
@@ -956,9 +1057,10 @@ namespace dslsa
                 GMapMarker marker =
                     new GMarkerGoogle(
                         new PointLatLng(Convert.ToDouble(pointDict["lat"].ElementAt(i)), Convert.ToDouble(pointDict["lon"].ElementAt(i))),
-                        GMarkerGoogleType.blue_pushpin);
+                       (GMarkerGoogleType)Enum.Parse(typeof(GMarkerGoogleType), unique_reports_dict[pointDict["report"].ElementAt(i)], true));
                 markers.Markers.Add(marker);
                 marker_list.Add(marker);
+
             }
             gmap.Overlays.Add(markers);
             gmap.ZoomAndCenterMarkers("markers");
@@ -1022,13 +1124,7 @@ namespace dslsa
                 return;
             }
             //check the excel file is found
-            try
-            {
-                OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + newpath + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';");
-                objConn.Open();
-                objConn.Close();
-            }
-            catch (Exception)
+            if (!File.Exists(newpath))
             {
                 label_ExcelPathMessage.Text = "The record excel file does not exist in the path entered. Please enter the correct path.";
                 label_ExcelPathMessage.ForeColor = Color.Red;
@@ -1054,7 +1150,6 @@ namespace dslsa
             richTextBox_CurrentExcelPath.Text = newpath;
 
             con.Close();
-
         }
 
         private void button_UpdateKMZPath_Click(object sender, EventArgs e)
@@ -1066,19 +1161,20 @@ namespace dslsa
             string newpath = textBox_NewKMZPath.Text;
             List<string> ancfiles = new List<string>();
 
-            //check that Alaska>>Anchorage>>redfiles.kmz exists in specified folder
-            try { ancfiles = Directory.GetFiles(newpath, "*").ToList(); }
-            catch (Exception ex)
+            //check if directory exists
+            if (!Directory.Exists(newpath))
             {
-                label_KMZPathMessage.Text = "The specifed folder does not exist. Please select the folder with state subdirectories and associated redfile KMZs.";
+                label_KMZPathMessage.Text = "The specifed folder does not exist. Please select the folder with state subdirectories and associated soils library KMZs.";
                 label_KMZPathMessage.ForeColor = Color.Red;
                 con.Close();
                 return;
             }
+
+            //check that Alaska>>Anchorage>>soilslibrary.kmz exists in specified folder
             try { ancfiles = Directory.GetFiles(newpath + @"\Alaska\Anchorage" + @"\", "*").ToList(); }
             catch (Exception ex)
             {
-                label_KMZPathMessage.Text = "The specifed folder is not correct. Please select the folder with state subdirectories and associated redfile KMZs.";
+                label_KMZPathMessage.Text = "The specifed folder is not correct. Please select the folder with state subdirectories and associated soils library KMZs.";
                 label_KMZPathMessage.ForeColor = Color.Red;
                 con.Close();
                 return;
@@ -1088,14 +1184,14 @@ namespace dslsa
             foreach (string ancfile in ancfiles)
             {
                 string filename = ancfile.Replace(newpath + @"\Alaska\Anchorage" + @"\", "").ToLower();
-                if (filename.Contains("redfiles") && !filename.Contains("project"))
+                if (filename.Contains("soilslibrary") && !filename.Contains("project"))
                 {
                     filefound = true;
                 }
             }
             if (!filefound)
             {
-                label_KMZPathMessage.Text = "The specifed folder is not correct. Please select the folder with state subdirectories and associated redfile KMZs.";
+                label_KMZPathMessage.Text = "The specifed folder is not correct. Please select the folder with state subdirectories and associated soils library KMZs.";
                 label_KMZPathMessage.ForeColor = Color.Red;
                 con.Close();
                 return;
@@ -1159,13 +1255,7 @@ namespace dslsa
             }
 
             //check the excel file is found
-            try
-            {
-                OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + newpath + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';");
-                objConn.Open();
-                objConn.Close();
-            }
-            catch (Exception)
+            if (!File.Exists(newpath))
             {
                 label_LatLonPathMessage.Text = "The lat lon excel file does not exist in the path entered. Please enter the correct path.";
                 label_LatLonPathMessage.ForeColor = Color.Red;
@@ -1196,7 +1286,7 @@ namespace dslsa
 
         private void buttonUpdateRecordDB_Click(object sender, EventArgs e)
         {
-            string labelmessageintro = "Uploading data. This operation may take 1-2 minutes.";
+            string labelmessageintro = "Uploading data. This operation may take up to 1 minute.";
             label_UpdateRecordDB.Text = labelmessageintro;
             label_UpdateRecordDB.ForeColor = Color.Blue;
             label_UpdateRecordDB.Invalidate();
@@ -1512,18 +1602,16 @@ namespace dslsa
                 }
             }
             state_tables.Sort();
-            foreach (string tab in state_tables)
-            {
-                comboBox_State.Items.Add(tab);
-            }
+            foreach (string tab in state_tables) { comboBox_State.Items.Add(tab); comboBox_StateAdmin.Items.Add(tab); }
             comboBox_State.SelectedItem = "Alaska";
+            comboBox_StateAdmin.SelectedItem = "Alaska";
             comboBoxState_SelectedValueChanged(sender, e);
             con.Close();
         }
 
         private void button_UpdateKMZDB_Click(object sender, EventArgs e)
         {
-            string labelmessageintro = "Uploading data. This operation may take 1-2 minutes.";
+            string labelmessageintro = "Uploading data. This operation may take up to 1 minute.";
             label_UpdateKMZDB.Text = labelmessageintro;
             label_UpdateKMZDB.ForeColor = Color.Blue;
             label_UpdateKMZDB.Invalidate();
@@ -1547,6 +1635,16 @@ namespace dslsa
                         fname = Convert.ToString(rdr["value"]);
                     }
                 }
+            }
+
+            //check that Alaska>>Anchorage>>soilslibrary.kmz exists in specified folder
+            try { List<string> ancfiles = Directory.GetFiles(fname + @"\Alaska\Anchorage" + @"\", "*").ToList(); }
+            catch (Exception ex)
+            {
+                label_UpdateKMZDB.Text = "The KMZ folder is not correct. Please select the folder with state subdirectories and associated soils library KMZs.";
+                label_UpdateKMZDB.ForeColor = Color.Red;
+                con.Close();
+                return;
             }
 
             //drop all kmz tables
@@ -1595,7 +1693,7 @@ namespace dslsa
                     foreach (string kmz_file in kmz_files)
                     {
                         string filename = kmz_file.Replace(dir_city + @"\", "").ToLower();
-                        if (filename.Contains("redfile") && !filename.Contains("project"))
+                        if (filename.Contains("soilslibrary") && !filename.Contains("project"))
                         {
                             ak_final_files.Add(kmz_file);
                         }
@@ -1641,18 +1739,41 @@ namespace dslsa
 
                                         //get file(report), type, depth, year
                                         string dummyvar;
+                                        bool cont = true;
                                         List<string> searchstrings = new List<string>() { "file", "type", "depth" };
                                         foreach (string s in searchstrings)
                                         {
-                                            searchstring = string.Format("<td>{0}</td>", s);
-                                            if (s == "file" && desc.IndexOf(searchstring) == -1) { searchstring = "<td>redfile</td>"; }
+                                            if (cont)
+                                            {
+                                                searchstring = string.Format("<td>{0}</td>", s);
+                                                if (s == "file" && desc.IndexOf(searchstring) == -1)
+                                                {
+                                                    searchstring = "<td>redfile</td>";
+                                                    if (desc.IndexOf(searchstring) == -1)
+                                                    {
+                                                        searchstring = "<td>soilslibrary</td>";
+                                                        if (desc.IndexOf(searchstring) == -1)
+                                                        {
+                                                            searchstring = "<td>soils library</td>";
+                                                        }
+                                                    }
+                                                }
 
-                                            startindex = desc.IndexOf(searchstring) + searchstring.Length;
-                                            endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
-                                            dummyvar = desc.Substring(startindex, endindex - startindex);
+                                                startindex = desc.IndexOf(searchstring) + searchstring.Length;
+                                                endindex = desc.IndexOf("</tr>", desc.IndexOf(searchstring) + 1);
+                                                dummyvar = desc.Substring(startindex, endindex - startindex);
 
-                                            if (s == "file") { pointDict["report"] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
-                                            else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
+                                                if (s == "file")
+                                                {
+                                                    if (dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''") == "")
+                                                    {
+                                                        cont = false; continue;
+                                                    }
+                                                    else { pointDict["report"] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
+                                                }
+                                                else { pointDict[s.ToLower()] = dummyvar.Substring(6, dummyvar.Length - 13).ToString().Replace("'", "''"); }
+
+                                            }
                                         }
 
                                         cmd.CommandText = string.Format("INSERT INTO KMZ (report,lat,lon,type,depth) VALUES ('{0}','{1}','{2}','{3}','{4}')", pointDict["report"], pointDict["lat"], pointDict["lon"], pointDict["type"], pointDict["depth"]);
@@ -1683,6 +1804,10 @@ namespace dslsa
                     "LEFT JOIN ALASKA " +
                     "ON (KMZ.report=ALASKA.report)";
 
+                cmd_sql = new SQLiteCommand(sql, con);
+                cmd_sql.ExecuteNonQuery();
+
+                sql = "DELETE FROM ALASKAKMZ WHERE report=''";
                 cmd_sql = new SQLiteCommand(sql, con);
                 cmd_sql.ExecuteNonQuery();
 
@@ -1823,6 +1948,10 @@ namespace dslsa
                                     return;
                                 }
 
+                                sql = string.Format("DELETE FROM {0}KMZ WHERE report=''", state);
+                                cmd_sql = new SQLiteCommand(sql, con);
+                                cmd_sql.ExecuteNonQuery();
+
                                 //drop kmz table
                                 sql = "DROP TABLE KMZ";
                                 cmd_sql = new SQLiteCommand(sql, con);
@@ -1853,18 +1982,79 @@ namespace dslsa
             }
         }
 
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        private void button_ShowReportsNotFound_Click(object sender, EventArgs e)
         {
-            //clear labels
-            List<Label> labels_toclear = new List<Label>() { label_UpdateRecordDB, label_UpdateKMZDB, label_ExcelPathMessage, label_KMZPathMessage, label_PDFPathMessage, label_LatLonPathMessage };
-            foreach (Label label in labels_toclear) { label.Text = ""; label.ForeColor = Color.Black; }
+            richTextBox_PDFsNotInFolder.Text = "";
 
-            textBox_NewExcelPath.Text = "";
-            textBox_NewKMZPath.Text = "";
-            textBox_NewPDFPath.Text = "";
-            textBox_NewLatLonPath.Text = "";
+            //add pdfs not found in folder but in record excel file
+            con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;");
+            con.Open();
+
+            //get distinct unique numbers in database
+            List<string> unique_reports = new List<string>();
+            string sql = String.Format("SELECT DISTINCT(report) FROM {0}", comboBox_StateAdmin.SelectedItem.ToString().ToUpper());
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, con))
+            {
+                using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        unique_reports.Add(Convert.ToString(rdr["report"]));
+                    }
+                }
+            }
+
+            //get pdffolder and files
+            sql = string.Empty;
+            using (SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;"))
+            {
+                con.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand("SELECT value FROM FOLDERPATHS WHERE type='pdfpath'", con))
+                {
+                    using (SQLiteDataReader rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                        {
+                            pdffolder = Convert.ToString(rdr["value"]) + @"\" + comboBox_StateAdmin.SelectedItem.ToString() + @"\";
+                        }
+                    }
+                }
+                con.Close();
+            }
+            if (!Directory.Exists(pdffolder))
+            {
+                label_PDFNotFound.Text = "The PDF folder does not exist. Enter the correct PDF folder at the bottom of this tab.";
+                label_PDFNotFound.ForeColor = Color.Red;
+                return;
+            }
+            List<string> pdffiles = Directory.GetFiles(pdffolder, "*.pdf").ToList();
+
+            //get edited pdf file names
+            List<string> pdffiles_edited = new List<string>();
+            string fname_edited = string.Empty;
+            foreach (string f in pdffiles)
+            {
+                string filename = f.Replace(pdffolder, "");
+                int index_space = filename.IndexOf(" ");
+                if (index_space == -1) { fname_edited = filename.Replace(".pdf", ""); }
+                else { fname_edited = filename.Substring(0, index_space); }
+                pdffiles_edited.Add(fname_edited);
+            }
+            StringBuilder boxtext = new StringBuilder(richTextBox_PDFsNotInFolder.Text);
+            //check if unique report in pdffiles, add to textbox if not
+            foreach (string r in unique_reports)
+            {
+                if (!pdffiles_edited.Contains(r))
+                {
+                    boxtext.AppendFormat(r + "\n");
+                }
+            }
+            richTextBox_PDFsNotInFolder.Text = boxtext.ToString();
+            label_PDFNotFound.Text = "";
+            label_PDFNotFound.ForeColor = Color.Black;
 
         }
+
 
 
         ////MAIN SEARCH METHOD.....................................................................
@@ -1907,6 +2097,8 @@ namespace dslsa
             string selectedCounty = String.Empty;
             string selectedCity = String.Empty;
             string selectedGrid = String.Empty;
+            string state = comboBox_State.SelectedItem.ToString();
+            selectedState = state;
 
             try
             {
@@ -1942,14 +2134,21 @@ namespace dslsa
 
             }
             catch (Exception) { }
-            try
+            if (state == "Alaska")
             {
-                selectedGrid = comboBox_AncGrid.Text.ToString();
-                cols.Add("anchoragegrid");
-                query_whereclause.Add("anchoragegrid LIKE '%" + selectedGrid + "%'");
+                try
+                {
+                    selectedGrid = comboBox_AncGrid.Text.ToString();
+                    if (selectedGrid != "")
+                    {
+                        cols.Add("anchoragegrid");
+                        query_whereclause.Add("anchoragegrid='" + selectedGrid + "'");
+                    }
 
+
+                }
+                catch (Exception) { }
             }
-            catch (Exception) { }
 
             //send error message if no selections made
             if (cols.Count == 1)
@@ -1967,8 +2166,7 @@ namespace dslsa
             string query_wherestring = string.Join(" " + query_type + " ", query_whereclause.ToArray());
 
             //query database for selections
-            string state = comboBox_State.SelectedItem.ToString();
-            selectedState = state;
+
             using (SQLiteConnection con = new SQLiteConnection("Data Source=" + dbpath + "; Version=3;"))
             {
                 con.Open();
@@ -1997,6 +2195,7 @@ namespace dslsa
             Form2 s = new Form2();
             s.Show();
         }
+
 
 
     }
